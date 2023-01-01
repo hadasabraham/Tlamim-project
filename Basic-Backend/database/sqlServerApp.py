@@ -34,7 +34,6 @@ async def root(request: Request, condition: str):
     else:
         json = server.get_candidates_query(condition)
 
-    print(json)
     response = JSONResponse(json, headers={})
     return response
 

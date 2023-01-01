@@ -14,11 +14,10 @@ class SqlServer(object):
 
     def __init__(self, database='test_database'):
         self.conn = sql.connect(database=database)
-        self._create_tables()
+        self.create_tables()
 
-    def _create_tables(self):
+    def create_tables(self):
         c = self.conn.cursor()
-
 
         query = "CREATE TABLE IF NOT EXISTS Stages(stage_id INTEGER PRIMARY KEY, form_link TEXT NOT NULL, CHECK(stage_id >= 1));"
         c.execute(query)
@@ -45,6 +44,40 @@ class SqlServer(object):
 
         c.execute(query)
         self.conn.commit()
+
+    def load_stages_table_from_csv(self, path):
+        """
+        param path: a path to csv table with columns stage_id, form_link
+        :return:
+        """
+        try:
+            c = self.conn.cursor()
+            df = pd.read_csv(fr'{path}')
+            values = SqlServer._dataframe_to_database_values(df)
+
+            query = "INSERT INTO Stages(stage_id, form_link) VALUES {0};".format(values)
+            c.execute(query)
+        except Exception as e:
+            print(e)
+        finally:
+            self.conn.commit()
+
+    def load_candidates_table_from_csv(self, path):
+        """
+        param path: a path to csv table with columns email, name, stage, status
+        :return:
+        """
+        try:
+            c = self.conn.cursor()
+            df = pd.read_csv(fr'{path}')
+            values = SqlServer._dataframe_to_database_values(df)
+
+            query = "INSERT INTO Candidates(email, name, stage, status) VALUES {0};".format(values)
+            c.execute(query)
+        except Exception as e:
+            print(e)
+        finally:
+            self.conn.commit()
 
     def add_grade(self, grade: Grade):
         c = self.conn.cursor()
@@ -85,11 +118,34 @@ class SqlServer(object):
     def get_candidates_query(self, condition: str = ""):
         c = self.conn.cursor()
 
-        query = "SELECT email, name, stage FROM Candidates {0}".format(SqlServer._parse_candidate_condition(condition=condition))
+        query = "SELECT email, name, stage FROM Candidates {0}".format(
+            SqlServer._parse_candidate_condition(condition=condition))
         c.execute(query)
         df = pd.DataFrame(c.fetchall(), columns=['email', 'name', 'stage'])
         self.conn.commit()
         return SqlServer._candidates_df_to_jason(df=df)
+
+    @staticmethod
+    def _dataframe_to_database_values(df: pd.DataFrame):
+        values = []
+        column_headers = df.columns.values.tolist()
+        for index in df.index:
+            row = '('
+            for column in column_headers:
+                val = str(df[column][index]).strip()
+                if not val.isnumeric() and val != 'True' and val != 'False':
+                    # should be string type
+                    row += f"'{val}', "
+                else:
+                    row += f"{val}, "
+            row = row[:-2] + ")"
+            values.append(row)
+
+        res = ''
+        for v in values[:-1]:
+            res += f'{v}, '
+        res += values[-1]
+        return res
 
     @staticmethod
     def _parse_candidate_condition(condition: str):
@@ -175,3 +231,5 @@ class SqlServer(object):
         query = "DELETE FROM TABLE EXISTS Stages;"
         c.execute(query)
         self.conn.commit()
+
+
