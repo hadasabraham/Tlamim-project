@@ -41,16 +41,19 @@ def test_connect2():
 # Handle the webapp sending a message to the websocket
 @socketio.on('message')
 def handle_message(message):
-    with open("data"+str(randint(1,3))+".json", 'r') as f:
+    with open("data1.json", 'r') as f:
         data = f.read()
         data = json.loads(data)
+    #    data.append({"name": "Eilon", "email": "eilon@gmail.com", "status": 4, "hide": "q: <answer>"})
     emit('responseMessage', {'data': data})
+    #with open("data1.json", 'w') as f:
+    #    f.write(data)
     
 # Handle the webapp sending a message to the websocket
 @socketio.on('search')
 def handle_message(message):
     print("searching")
-    with open("data3.json", 'r') as f:
+    with open("data1.json", 'r') as f:
         data = f.read()
         data = json.loads(data)
         print(data)
