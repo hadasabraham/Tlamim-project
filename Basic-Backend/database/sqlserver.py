@@ -1,9 +1,9 @@
 import sqlite3 as sql
 import pandas as pd
 
-from database.candidate import Candidate
-from database.grade import Grade
-from database.stage import Stage
+from candidate import Candidate
+from grade import Grade
+from stage import Stage
 
 TRANSLATE_TO_ENGLISH = {"אימייל": "email", "שלב": "stage", "שם": "name"}
 TRANSLATE_TO_HEBREW = {"email": "אימייל", "stage": "שלב", "name": "שם"}
@@ -34,6 +34,7 @@ class SqlServer(object):
                 "FOREIGN KEY (candidate_email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
                 "CHECK(score >= 0 AND score <= 10));"
         c.execute(query)
+
 
         self.conn.commit()
 
@@ -233,3 +234,8 @@ class SqlServer(object):
         self.conn.commit()
 
 
+
+if __name__ == '__main__':
+
+    df = pd.read_csv("candidates_initial_elazar.csv")
+    print(df.columns)

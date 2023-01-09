@@ -5,3 +5,5 @@ class Candidate:
         self.name = name
         self.stage = stage
         self.status = status
+
+
