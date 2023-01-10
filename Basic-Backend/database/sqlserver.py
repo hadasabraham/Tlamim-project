@@ -103,9 +103,9 @@ class SqlServer(object):
 
         query = "SELECT email, name, stage FROM Candidates ORDER BY email"
         c.execute(query)
-        df = pd.DataFrame(c.fetchall(), columns=['email', 'name', 'stage'])
+        res = pd.DataFrame(c.fetchall(), columns=['email', 'name', 'stage'])
         self.conn.commit()
-        return SqlServer._candidates_df_to_jason(df=df)
+        return SqlServer._candidates_df_to_jason(df=res)
 
     def get_candidates_at_stage(self, stage_id: int):
         c = self.conn.cursor()
@@ -232,6 +232,9 @@ class SqlServer(object):
         query = "DELETE FROM TABLE EXISTS Stages;"
         c.execute(query)
         self.conn.commit()
+
+    def __del__(self):
+        self.conn.close()
 
 
 
