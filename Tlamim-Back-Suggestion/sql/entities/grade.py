@@ -1,25 +1,14 @@
 class Grade(object):
 
-    def __init__(self, stage: int, grade: float, notes: list[str] = None, passed: bool = None):
-        self.stage = stage
+    def __init__(self, email: str, stage_index: int, grade: float, passed: bool = None, notes: str = None):
+        self.email = email
+        self.stage_index = stage_index
         self.grade = grade
-        self.notes = notes
         self.passed = passed
+        self.notes = notes
 
-
-    @staticmethod
-    def get_attributes_info():
-        info = [('stage_index', 'מספר שלב', 'int'),
-                ('candidate_email', 'דואל', 'str'),
-                ('grade', 'ציון', 'float'),
-                ('notes', 'הערות', 'list[str]'),
-                ('passed', 'עבר', 'bool')]
-        return info
-
-    def get_notes_str(self):
-        res = ""
-        if self.notes:
-            for note in self.notes:
-                res += note + ","
-            return res[:-1]
+    def __str__(self):
+        passed = self.passed if self.passed else 'NULL'
+        notes = f"\'{self.notes}\'" if self.passed else 'NULL'
+        res = "(" + f"\'{self.email}\'" + f", {self.stage_index}" + f", {self.grade}" + f", {passed}" + f", {notes})"
         return res

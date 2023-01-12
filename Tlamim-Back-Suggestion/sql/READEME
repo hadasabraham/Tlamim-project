@@ -1,0 +1,50 @@
+
+The SqlServer has 7 main tables.
+The tables format is:
+Stages(stage_index, stage_name)
+Grades(email, stage_index, grade, passed, notes)
+PrivateQuestions(email, stage_index, table_path, file_type)
+Forms(form_id, form_link, stage_index, responses_file_path, file_type)
+FormAnswers(email, form_id, row_index)
+Candidates(email, first_name, last_name, stage_index, status)
+GeneralQuestions(stage_index, file_path, file_type)
+
+
+The stages table saves the general description of each stage. The stage index indicate the order of the stages and has to be unique.
+The candidates table enable to save general information on each candidate and his key(email\דוא"ל).
+This is the information viewed from the initial we page on the frontend.
+The grades table saves the grade of the candidates for each stage. In addition, it saves if the candidate passed the stage or eliminated.
+The general questions table enable to save file (xlsx\csv) of questions and answers that collected manually and
+associated with some stage we assume the columns email\דוא"ל in the table some we can find specific candidates.
+The private questions table enables to save private information on each candidate for each stage. The information assumed to be
+saved as an xlsx or csv file. We save the files to the last two to enable Eleazar
+use the old datatable format in addition to the new automatic format.
+The forms table saves all thw forms questionnaires and their stage association. Each form has a file (xlsx\csv) that saves the answers for the form.
+The file can be xlsx\csv and have to contain the email\דוא"ל column to enable search for specific candidates.
+If responses path hasn't been given then we use the form id and file_path (might be default type of xlsx) to create responses path.
+Notice that when adding a response to the form we should check if the file exists.
+If it doesn't we should create the file and use the forms api the get the questions as columns and parse the responses as rows.
+Furthermore, for each candidate that responded we insert to the file, we save in the FormsAnswers the relevant row index in the file.
+The forms answers enable to check quickly if a candidate answered to a form and load only his row from the answers file.
+We uses a answers file that should be updated upon refresh request or event so we can access the data offline after we initially parsed it.
+
+For each table we have class for it's entry and class for the table.
+For each table the server supports adding entry, get all entries as dataframe with english columns,
+loading table that has the columns of the sql table (all columns of the sql table in english or hebrew together and additional columns are ignored)
+and exporting the sql table to xlsx\csv table with exactly the sql columns in english.
+
+Adding entries to general and private questions file isn't supported and probably wont be.
+Adding entries of responses to each form file isn't supported yet but will be.
+Adding entries of responses to the form will be initially by manually editing the responses file and currently can be done in this way.
+
+The next step will be to add automation so upon refresh (in the future can be upon event)
+of some form we add automatically relevant rows to the relevant file.
+In addition we would like to support getting all the data of a (candidate email, stage_index) pair
+and getting all the data of a candidate from all stages.
+We would like to enable updating grades.
+We would like to enable getting a list of (candidate_email, stage_index) from the candidates table that satisfied some status.
+We would like to enable updating status.
+
+Additional work should be on the backend server app that suppose to use the SqlServer and convert relevant requests from the frontend
+such as adding, getting, getting candidates upon condition on their information in the candidates table, loading, exporting, etc.
+Those functionalities should be done upon agreement with the frontend team on communication formats.

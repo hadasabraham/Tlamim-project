@@ -5,6 +5,11 @@ from entities.stage import Stage
 from entities.form import Form
 from entities.candidate import Candidate
 from entities.grade import Grade
+from entities.generalQuestions import GeneralQuestions
+from entities.formAnswers import FormAnswers
+from entities.privateQuestions import PrivateQuestions
+from entities.table import *
+import ast
 
 
 class SqlServer(object):
@@ -15,138 +20,48 @@ class SqlServer(object):
     def create_tables(self):
         curser = self.__conn.cursor()
 
-        query = "CREATE TABLE IF NOT EXISTS Stages(stage_index INTEGER PRIMARY KEY, stage_name TEXT NOT NULL, " \
-                "CHECK(stage_index >= 0));"
+        query = "CREATE TABLE IF NOT EXISTS Stages(stage_index INTEGER PRIMARY KEY, stage_name TEXT NOT NULL, CHECK(stage_index >= 0));"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS Forms(stage_index INTEGER NOT NULL, form_id TEXT, form_link TEXT, " \
-                " PRIMARY KEY(form_id, form_link, stage_index), FOREIGN KEY (stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
+        query = "CREATE TABLE IF NOT EXISTS Candidates(email TEXT PRIMARY KEY, first_name TEXT NOT NULL, " \
+                "last_name NOT NULL, stage_index INTEGER, status TEXT, " \
+                " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS Candidates(email TEXT PRIMARY KEY," \
-                " first_name TEXT NOT NULL, last_name TEXT NOT NULL, stage_index INTEGER," \
-                " current_status TEXT, FOREIGN KEY (stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
+
+        query = "CREATE TABLE IF NOT EXISTS GeneralQuestions(stage_index INTEGER PRIMARY KEY, " \
+                "file_path TEXT NOT NULL, file_type TEXT NOT NULL, CHECK(file_type IN ('csv', 'xlsx')), " \
+                "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS GeneralQuestions(stage_index INTEGER PRIMARY KEY, questions TEXT NOT NULL," \
-                " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index));"
+        query = "CREATE TABLE IF NOT EXISTS Forms(form_id TEXT PRIMARY KEY, " \
+                "form_link TEXT NOT NULL, stage_index INTEGER, responses_file_path TEXT NOT NULL, " \
+                "file_type TEXT NOT NULL, CHECK(file_type IN ('csv', 'xlsx')), " \
+                " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS GeneralAnswers(stage_index INTEGER, email TEXT, answers TEXT NOT NULL, PRIMARY KEY(stage_index, email), " \
-                "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index), FOREIGN KEY(email) REFERENCES Candidates(email));"
 
+        query = "CREATE TABLE IF NOT EXISTS FormsAnswers(email TEXT, form_id TEXT, row_index INTEGER NOT NULL, " \
+                "CHECK(row_index >= 0), PRIMARY KEY(email, form_id), " \
+                "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
+                "FOREIGN KEY(form_id) REFERENCES Forms(form_id) ON DELETE CASCADE);"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS PrivateQuestionsAnswers(stage_index INTEGER, email TEXT, questions TEXT NOT NULL," \
-                " answers TEXT NOT NULL, FOREIGN KEY(stage_index) REFERENCES Stages(stage_index), " \
-                "FOREIGN KEY(email) REFERENCES Candidates(email), PRIMARY KEY(stage_index, email));"
+
+        query = "CREATE TABLE IF NOT EXISTS PrivateQuestions(email TEXT, stage_index TEXT, table_path TEXT NOT NULL, file_type TEXT NOT NULL, " \
+                "PRIMARY KEY(email, stage_index), CHECK(file_type IN ('csv', 'xlsx')), " \
+                "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
+                "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS CandidatesFormsAnswers(stage_index TEXT, form_id TEXT, " \
-                "candidate_email TEXT, response TEXT NOT NULL, PRIMARY KEY(stage_index, candidate_email, form_id)," \
-                " FOREIGN KEY(candidate_email) REFERENCES Candidates(email) ON DELETE CASCADE," \
-                " FOREIGN KEY(form_id, stage_index) REFERENCES Forms(form_id, stage_index) ON DELETE CASCADE);"
+
+        query = "CREATE TABLE IF NOT EXISTS Grades(email TEXT, stage_index INTEGER, " \
+                "grade FLOAT NOT NULL, passed BOOL, notes TEXT, PRIMARY KEY(email, stage_index), " \
+                "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
+                "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
-
-        query = "CREATE TABLE IF NOT EXISTS Grades(stage_index INTEGER, " \
-                "candidate_email TEXT, grade FLOAT, notes TEXT,passed BOOL, " \
-                "PRIMARY KEY(stage_index, candidate_email), " \
-                "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE, " \
-                "FOREIGN KEY(candidate_email) REFERENCES Candidates(candidate_email) ON DELETE CASCADE);"
-        curser.execute(query)
-        self.__conn.commit()
-
-    def add_stage(self, stage: Stage):
-
-        curser = self.__conn.cursor()
-        query = "INSERT INTO Stages(stage_index, stage_name) VALUES ({0}, {1})".format(stage.index,
-                                                                                       f"'{stage.name}'")
-        curser.execute(query)
-        self.__conn.commit()
-
-        if stage.forms:
-            for form in stage.forms:
-                self.add_form(form=form, stage_index=stage.index)
-
-    def get_stages(self):
-        curser = self.__conn.cursor()
-        query = "SELECT * FROM Stages ORDER BY stage_index"
-        curser.execute(query)
-
-        eng_col = [eng for eng, _, _ in Stage.get_attributes_info()]
-        res = pd.DataFrame(curser.fetchall(), columns=eng_col)
-        self.__conn.commit()
-        return res
-
-    def add_form(self, form: Form, stage_index):
-        curser = self.__conn.cursor()
-
-        query = "INSERT INTO Forms(stage_index, form_id, form_link) VALUES " \
-                "({0}, {1}, {2})".format(stage_index, f"'{form.id}'", f"'{form.link}'")
-
-        curser.execute(query)
-        self.__conn.commit()
-
-    def get_forms(self):
-        curser = self.__conn.cursor()
-        query = "SELECT * FROM Forms ORDER BY stage_index"
-        curser.execute(query)
-
-        eng_col = [eng for eng, _, _ in Form.get_attributes_info()]
-        res = pd.DataFrame(curser.fetchall(), columns=eng_col)
-        self.__conn.commit()
-        return res
-
-    def add_candidate(self, candidate: Candidate):
-        curser = self.__conn.cursor()
-
-        query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, current_status) VALUES " \
-                "({0}, {1}, {2}, {3}, {4})".format(f"'{candidate.email}'",
-                                                   f"'{candidate.first_name}'",
-                                                   f"'{candidate.last_name}'",
-                                                   candidate.stage_index,
-                                                   f"'{candidate.status}'")
-
-        curser.execute(query)
-        self.__conn.commit()
-
-    def get_candidates(self):
-        curser = self.__conn.cursor()
-
-        query = "SELECT * FROM Candidates ORDER BY email"
-        curser.execute(query)
-
-        eng_col = [eng for eng, _, _ in Candidate.get_attributes_info()]
-        res = pd.DataFrame(curser.fetchall(), columns=eng_col)
 
         self.__conn.commit()
-        return res
-
-    def add_grade(self, candidate_email: str, grade: Grade):
-        curser = self.__conn.cursor()
-
-        if grade.notes is not None and grade.passed is not None:
-            query = "INSERT INTO Grades(stage_index, candidate_email, grade, notes, passed) VALUES " \
-                    "({0}, {1}, {2}, {3}, {4});".format(grade.stage,
-                                                        f"'{candidate_email}'",
-                                                        grade.grade,
-                                                        f"'{grade.get_notes_str()}'",
-                                                        (1 if grade.passed else 0))
-            curser.execute(query)
-        else:
-            print("Error, ", grade.notes is None, grade.passed is None)
-        self.__conn.commit()
-
-    def get_grades(self):
-        curser = self.__conn.cursor()
-        query = "SELECT * FROM Grades ORDER BY candidate_email"
-
-        curser.execute(query)
-
-        eng_col = [eng for eng, _, _ in Grade.get_attributes_info()]
-        res = pd.DataFrame(curser.fetchall(), columns=eng_col)
-        self.__conn.commit()
-        return res
 
     def drop_tables(self):
         curser = self.__conn.cursor()
@@ -154,13 +69,10 @@ class SqlServer(object):
         query = "DROP TABLE IF EXISTS Grades;"
         curser.execute(query)
 
-        query = "DROP TABLE IF EXISTS CandidatesFormsAnswers;"
+        query = "DROP TABLE IF EXISTS PrivateQuestions;"
         curser.execute(query)
 
-        query = "DROP TABLE IF EXISTS PrivateQuestionsAnswers;"
-        curser.execute(query)
-
-        query = "DROP TABLE IF EXISTS GeneralAnswers;"
+        query = "DROP TABLE IF EXISTS Forms;"
         curser.execute(query)
 
         query = "DROP TABLE IF EXISTS GeneralQuestions;"
@@ -169,133 +81,247 @@ class SqlServer(object):
         query = "DROP TABLE IF EXISTS Candidates;"
         curser.execute(query)
 
-        query = "DROP TABLE IF EXISTS Forms;"
-        curser.execute(query)
-
         query = "DROP TABLE IF EXISTS Stages;"
         curser.execute(query)
 
         self.__conn.commit()
 
-    def clear_table(self):
+    def clear_tables(self):
         curser = self.__conn.cursor()
 
-        query = "DELETE FROM TABLE IF EXISTS Grades;"
+        query = "DELETE FROM Grades;"
         curser.execute(query)
 
-        query = "DELETE FROM TABLE IF EXISTS CandidatesFormsAnswers;"
+        query = "DELETE FROM PrivateQuestions;"
         curser.execute(query)
 
-        query = "DELETE FROM TABLE IF EXISTS PrivateQuestionsAnswers;"
+        query = "DELETE FROM Forms;"
         curser.execute(query)
 
-        query = "DELETE FROM TABLE IF EXISTS GeneralAnswers;"
+        query = "DELETE FROM GeneralQuestions;"
         curser.execute(query)
 
-        query = "DELETE FROM TABLE IF EXISTS GeneralQuestions;"
+        query = "DELETE FROM Candidates;"
         curser.execute(query)
 
-        query = "DELETE FROM TABLE IF EXISTS Candidates;"
-        curser.execute(query)
-
-        query = "DELETE FROM TABLE IF EXISTS Forms;"
-        curser.execute(query)
-
-        query = "DELETE FROM TABLE IF EXISTS Stages;"
+        query = "DELETE FROM Stages;"
         curser.execute(query)
 
         self.__conn.commit()
 
-    def get_candidates_general_information(self, condition: str):
-        """
-
-        :param condition: condition only on the general information attributes
-        :return:
-        """
+    def add_stage(self, stage: Stage):
         curser = self.__conn.cursor()
-
-        query = "SELECT * FROM Candidates {0};".format(
-            SqlServer.parse_condition(condition=condition, columns=Candidate.get_attributes_info()))
+        query = "INSERT INTO Stages(stage_index, stage_name) VALUES {0};".format(str(stage))
         curser.execute(query)
-
-        eng_col = [eng for eng, _, _ in Candidate.get_attributes_info()]
-        df = pd.DataFrame(curser.fetchall(),
-                          columns=eng_col)
         self.__conn.commit()
 
-        return SqlServer.dataframe_to_json_list(df=df, columns=eng_col)
+    def get_stages(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM Stages;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in StagesTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
 
-    @staticmethod
-    def parse_condition(condition: str, columns: list[tuple[str, str, str]]):
-        """
+    def load_stagesTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = StagesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=StagesTable.get_sql_cols()):
+            query = "INSERT INTO Stages(stage_index, stage_name) VALUES ({0});".format(row)
+            curser.execute(query)
+        self.__conn.commit()
 
-        :param condition:
-        :param columns: list of tuples of (eng_col, heb_col, type string)
-        :return:
-        """
-        error_cond = "WHERE FALSE"
-        res = "WHERE"
-        attributes = condition.split(",")
-        for attr in attributes:
-            clean = attr.strip()
-            cond = clean.split(" ")
-            item1 = (cond[0]).strip()
-            item2 = (cond[1]).strip()
+    def export_stagesTable(self, path: str, file_type: str, index: bool):
+        stages_table = self.get_stages()
+        if file_type == 'csv':
+            stages_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            stages_table.to_excel(path, index=index)
 
-            key_eng = ''
-            type_str = ''
-            val = ''
-            for eng_cmp, key_cmp, type_str_cmp in columns:
-                if key_cmp == item1:
-                    key_eng = eng_cmp
-                    type_str = type_str_cmp
-                    val = item2
-                    break
-                elif key_cmp == item2:
-                    key_eng = eng_cmp
-                    type_str = type_str_cmp
-                    val = item1
+    def add_grade(self, grade: Grade):
+        curser = self.__conn.cursor()
+        query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES {0};".format(str(grade))
+        curser.execute(query)
+        self.__conn.commit()
 
-            if not key_eng or not type_str:
-                # if not found this is not valid key
-                return error_cond
+    def get_grades(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM Grades;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in GradesTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
 
-            if type_str == 'str':
-                res += f" {key_eng}='{val}' AND"
-            else:
-                res += f" {key_eng}={val} AND"
+    def load_gradesTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = GradesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=GradesTable.get_sql_cols()):
+            query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES ({0});".format(row)
+            curser.execute(query)
+        self.__conn.commit()
 
-        # the rfind returns a valid value because if there was error and the AND not in the res then we returned already
-        return res[:res.rfind(" AND")]
+    def export_gradesTable(self, path: str, file_type: str, index: bool):
+        grades_table = self.get_stages()
+        if file_type == 'csv':
+            grades_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            grades_table.to_excel(path, index=index)
 
-    @staticmethod
-    def dataframe_to_json_list(df: pd.DataFrame, columns: list[str]):
-        res = []
+    def add_privateQuestions(self, private_questions: PrivateQuestions):
+        curser = self.__conn.cursor()
+        query = "INSERT INTO PrivateQuestions(email, stage_index, table_path, file_type) VALUES {0};".format(str(private_questions))
+        curser.execute(query)
+        self.__conn.commit()
 
-        for index, row in df.iterrows():
-            d = {}
-            for col_name in columns:
-                d[col_name] = row[col_name]
-            res.append(d)
+    def get_privateQuestions(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM PrivateQuestions;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in PrivateQuestionsTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
 
-        return res
+    def load_privateQuestionsTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = PrivateQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=PrivateQuestionsTable.get_sql_cols()):
+            query = "INSERT INTO PrivateQuestions(email, stage_index, table_path, file_type) VALUES ({0});".format(row)
+            curser.execute(query)
+        self.__conn.commit()
 
-    def get_candidate_entire_information(self, candidate_email: str):
-        """
-        Gather the entire information collected on specific candidate from all of his stages
-        :param candidate_email:
-        :return:
-        """
-        pass
+    def export_privateQuestionsTable(self, path: str, file_type: str, index: bool):
+        private_questions_table = self.get_stages()
+        if file_type == 'csv':
+            private_questions_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            private_questions_table.to_excel(path, index=index)
 
-    def get_candidate_stage_information(self, candidate_email: str, stage_index: int):
-        """
-        Get the information of a candidate that relevant to a specific stage
-        :param candidate_email:
-        :param stage_index:
-        :return:
-        """
-        pass
+    def add_form(self, form: Form):
+        curser = self.__conn.cursor()
+        query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES {0};".format(str(form))
+        curser.execute(query)
+        self.__conn.commit()
+
+    def get_forms(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM Forms;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in FormsTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
+
+    def load_formsTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = FormsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=FormsTable.get_sql_cols()):
+            query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES ({0});".format(row)
+            curser.execute(query)
+        self.__conn.commit()
+
+    def export_formsTable(self, path: str, file_type: str, index: bool):
+        forms_table = self.get_forms()
+        if file_type == 'csv':
+            forms_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            forms_table.to_excel(path, index=index)
+
+    def add_formsAnswers(self, form_answers: FormAnswers):
+        curser = self.__conn.cursor()
+        query = "INSERT INTO FormAnswers(email, form_id, row_index) VALUES {0};".format(str(form_answers))
+        curser.execute(query)
+        self.__conn.commit()
+
+    def get_formsAnswers(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM FormAnswers;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in FormsAnswersTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
+
+    def load_formsAnswersTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = FormsAnswersTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=FormsAnswersTable.get_sql_cols()):
+            query = "INSERT INTO FormAnswers(email, form_id, row_index) VALUES ({0});".format(row)
+            curser.execute(query)
+        self.__conn.commit()
+
+    def export_formsAnswersTable(self, path: str, file_type: str, index: bool):
+        forms_answers_table = self.get_formsAnswers()
+        if file_type == 'csv':
+            forms_answers_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            forms_answers_table.to_excel(path, index=index)
+
+    def add_candidate(self, candidate: Candidate):
+        curser = self.__conn.cursor()
+        query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status) VALUES {0};".format(
+            str(candidate))
+        curser.execute(query)
+        self.__conn.commit()
+
+    def get_candidates(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM Candidates;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in CandidatesTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
+
+    def load_candidatesTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=CandidatesTable.get_sql_cols()):
+            query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status) VALUES ({0});".format(
+                row)
+            curser.execute(query)
+        self.__conn.commit()
+
+    def export_candidatesTable(self, path: str, file_type: str, index: bool):
+        candidates_table = self.get_candidates()
+        if file_type == 'csv':
+            candidates_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            candidates_table.to_excel(path, index=index)
+
+    def add_generalQuestions(self, general_questions: GeneralQuestions):
+        curser = self.__conn.cursor()
+        query = "INSERT INTO GeneralQuestions(stage_index, file_path, file_type) VALUES {0};".format(
+            str(general_questions))
+        curser.execute(query)
+        self.__conn.commit()
+
+    def get_generalQuestions(self) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM GeneralQuestions;"
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in GeneralQuestionsTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
+
+    def load_generalQuestionsTable(self, path: str, file_type: str, hebrew_table: bool):
+        table = GeneralQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        curser = self.__conn.cursor()
+        for row in table.get_rows_to_load(sql_columns=CandidatesTable.get_sql_cols()):
+            query = "INSERT INTO GeneralQuestions(stage_index, file_path, file_type) VALUES ({0});".format(
+                row)
+            curser.execute(query)
+        self.__conn.commit()
+
+    def export_generalQuestionsTable(self, path: str, file_type: str, index: bool):
+        general_questions_table = self.get_generalQuestions()
+        if file_type == 'csv':
+            general_questions_table.to_csv(path, index=index)
+        elif file_type == 'xlsx':
+            general_questions_table.to_excel(path, index=index)
 
     def search(self):
         pass
@@ -309,79 +335,3 @@ class SqlServer(object):
         """
         pass
 
-    def load_csv(self, stages_path, general_information_path, answers_path, grades_path, decisions_path):
-        """
-        load all the tables from csv
-        :return:
-        """
-        pass
-
-    def export_csv(self, stages_path, general_information_path, answers_path, grades_path, decisions_path):
-        """
-        export all the tables to csv
-        :return:
-        """
-        pass
-
-    """
-    General tables description:
-    
-    Stages(stage_index INTEGER PRIMARY KEY, stage_name TEXT)
-    
-    
-    Forms(form_id TEXT, form_link TEXT, stage_index INTEGER, PRIMARY KEY(form_id, form_link))
-    # Stage without form will insert form_id=''
-    
-    
-    Candidates(email TEXT PRIMARY KEY, first_name TEXT NOT NULL, family_name TEXT NOT NULL,
-     stage_index INTEGER, current_status TEXT, FOREIGN KEY (stage_id) REFERENCES Stages(stage_index) ON DELETE CASCADE)
-     
-    
-    CandidatesAnswers(stage_index TEXT, form_id TEXT, candidate_email TEXT, response TEXT, PRIMARY KEY(stage_index, candidate_email))
-    # The response structure is a string of dictionary with the key-values:
-    # * 'stage_name' : '<name>'
-    # * 'timestamp' : '<timestamp>'
-    # * 'answers' : '<answers>'
-    # Where the answers value is a list of dictionaries of the format:
-    # * 'question_title' : '<title>'
-    # * 'question_answer' : '<answer>'
-    
-    We can add column to timestamp if we wish to update a response without need to parse the existing one 
-    (the response string is big so might be better to get the timestamp separately and if need updating the response content). 
-    
-    Notice that if form_id is 0 and we wish to load data from a table that has questions as its columns and the rows are different candidate
-    We can parse each row by identifying the candidate email and which stage the table represent.
-    We assume the table has timestamp for each row so the general answers structure can be built.
-    The answers list of dictionaries can be built by parsing each colum in the row.
-    We use the column title as the question title and the value of the specific column within the row as
-    the question answer.
-    This is important if we wish to be able to parse Eleazar current export tables.
-    For now we assume that stage 0 is the input information. It doesn't have a form and if in the csv there is no column 
-    to indicate the stage we assume that this is stage 0.
-    
-    
-    Grades(stage_index INTEGER, candidate_email TEXT, grade FLOAT, notes TEXT,pass BOOL, PRIMARY KEY(stage_index, candidate_email))
-    # saving the relevant grades foreach candidate stage
-    
-        
-    Notice that we can merge the grades and decisions tables if we add different notes column for each step or if we save the notes
-    as a string of list.
-    Suggested format could be list of dictionaries with the format:
-    * 'note_index': '<index>'
-    * 'note': '<note>'
-    * 'step': '<step>'
-    When the step could be grading, deciding as basic and might be extended in the future
-    
-    
-    * General search - Roy
-    * Get General Info - Roy
-    * Get questions info - Roy
-    * Create/Clear/Delete - Roy 
-    * Add Stage/Form - Roy
-    
-    * Load info - Alon
-    * Export info - Alon
-    
-    * Sanity check
-    
-    """
