@@ -1,11 +1,11 @@
 class Candidate(object):
 
     def __init__(self, email: str, first_name: str, last_name: str, stage_index: int = 0, status: str = None):
-        self.email = email
-        self.first_name = first_name
-        self.last_name = last_name
+        self.email = email.strip()
+        self.first_name = first_name.strip()
+        self.last_name = last_name.strip()
         self.stage_index = stage_index
-        self.status = status
+        self.status = status.strip() if status is not None else status
 
     def __str__(self):
         if self.status:
@@ -13,4 +13,14 @@ class Candidate(object):
         else:
             res = f"(\'{self.email}\', \'{self.first_name}\', \'{self.last_name}\', {self.stage_index}, NULL)"
         return res
+
+    def to_json_list(self):
+        name = self.first_name + " " + self.last_name
+        stage = self.stage_index
+        d = dict()
+        d['email'] = self.email
+        d['name'] = name
+        d['stage'] = stage
+        d['status'] = self.status if self.status else ''
+        return [d]
 

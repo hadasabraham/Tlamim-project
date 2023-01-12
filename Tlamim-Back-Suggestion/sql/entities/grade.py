@@ -1,14 +1,21 @@
 class Grade(object):
 
     def __init__(self, email: str, stage_index: int, grade: float, passed: bool = None, notes: str = None):
-        self.email = email
+        self.email = email.strip()
         self.stage_index = stage_index
         self.grade = grade
         self.passed = passed
-        self.notes = notes
+        self.notes = notes.strip()
 
     def __str__(self):
         passed = self.passed if self.passed else 'NULL'
         notes = f"\'{self.notes}\'" if self.passed else 'NULL'
         res = "(" + f"\'{self.email}\'" + f", {self.stage_index}" + f", {self.grade}" + f", {passed}" + f", {notes})"
         return res
+
+    def to_json_list(self) -> list[dict]:
+        d = dict()
+        d['grade'] = self.grade
+        d['passed'] = self.passed if self.passed is not None else ''
+        d['notes'] = self.notes if self.notes is not None else ''
+        return [d]

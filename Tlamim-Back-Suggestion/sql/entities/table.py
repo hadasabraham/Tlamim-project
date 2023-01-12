@@ -1,12 +1,45 @@
-
 import pandas as pd
 
 
 class Table(object):
 
     def __init__(self, path: str, table_type: str, hebrew_table: bool):
-        self.table = pd.read_csv(path) if table_type == 'csv' else pd.read_excel(path)
+        self.table = pd.read_csv(path.strip()) if table_type.strip() == 'csv' else pd.read_excel(path)
         self.hebrew_table = hebrew_table
+
+    @staticmethod
+    def find_row(path: str, file_type: str, english_key: str, hebrew_key: str, value):
+        table = pd.read_csv(path.strip()) if file_type.strip() == 'csv' else pd.read_excel(path)
+        if english_key in table.columns.tolist():
+            row = table[table[english_key] == value]
+        elif hebrew_key in table.columns.tolist():
+            row = table[table[hebrew_key] == value]
+        else:
+            return None
+        return row
+
+    @staticmethod
+    def get_row(path: str, file_type: str, row_index: int):
+        if file_type.strip() == 'csv':
+            row = pd.read_csv(path, skiprows=lambda x: x not in [row_index, 0])
+        else:
+            row = pd.read_excel(path, skiprows=lambda x: x not in [row_index, 0])
+        return row
+
+    @staticmethod
+    def row_to_json_list(row: pd.DataFrame):
+        answers = []
+        for question in row.columns.tolist():
+            ans = dict()
+            ans['title'] = str(question)
+            ans['answer'] = row[question][0]
+            answers.append(ans)
+        return answers
+
+    @staticmethod
+    def get_row_as_json_list(path: str, file_type: str, row_index: int):
+        row = Table.get_row(path=path, file_type=file_type, row_index=row_index)
+        return Table.row_to_json_list(row=row)
 
     @staticmethod
     def get_sql_cols():
@@ -87,7 +120,6 @@ class GeneralQuestionsTable(Table):
 
     def __init__(self, path: str, table_type: str, hebrew_table: bool):
         super().__init__(path, table_type, hebrew_table)
-
 
     @staticmethod
     def get_sql_cols():

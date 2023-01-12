@@ -28,7 +28,6 @@ class SqlServer(object):
                 " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-
         query = "CREATE TABLE IF NOT EXISTS GeneralQuestions(stage_index INTEGER PRIMARY KEY, " \
                 "file_path TEXT NOT NULL, file_type TEXT NOT NULL, CHECK(file_type IN ('csv', 'xlsx')), " \
                 "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
@@ -40,20 +39,17 @@ class SqlServer(object):
                 " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-
         query = "CREATE TABLE IF NOT EXISTS FormsAnswers(email TEXT, form_id TEXT, row_index INTEGER NOT NULL, " \
                 "CHECK(row_index >= 0), PRIMARY KEY(email, form_id), " \
                 "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
                 "FOREIGN KEY(form_id) REFERENCES Forms(form_id) ON DELETE CASCADE);"
         curser.execute(query)
 
-
         query = "CREATE TABLE IF NOT EXISTS PrivateQuestions(email TEXT, stage_index TEXT, table_path TEXT NOT NULL, file_type TEXT NOT NULL, " \
                 "PRIMARY KEY(email, stage_index), CHECK(file_type IN ('csv', 'xlsx')), " \
                 "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
                 "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
-
 
         query = "CREATE TABLE IF NOT EXISTS Grades(email TEXT, stage_index INTEGER, " \
                 "grade FLOAT NOT NULL, passed BOOL, notes TEXT, PRIMARY KEY(email, stage_index), " \
@@ -115,7 +111,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_stages(self) -> pd.DataFrame:
+    def get_stagesTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Stages;"
         curser.execute(query)
@@ -133,7 +129,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_stagesTable(self, path: str, file_type: str, index: bool):
-        stages_table = self.get_stages()
+        stages_table = self.get_stagesTable()
         if file_type == 'csv':
             stages_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -145,7 +141,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_grades(self) -> pd.DataFrame:
+    def get_gradesTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Grades;"
         curser.execute(query)
@@ -163,7 +159,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_gradesTable(self, path: str, file_type: str, index: bool):
-        grades_table = self.get_stages()
+        grades_table = self.get_gradesTable()
         if file_type == 'csv':
             grades_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -171,11 +167,12 @@ class SqlServer(object):
 
     def add_privateQuestions(self, private_questions: PrivateQuestions):
         curser = self.__conn.cursor()
-        query = "INSERT INTO PrivateQuestions(email, stage_index, table_path, file_type) VALUES {0};".format(str(private_questions))
+        query = "INSERT INTO PrivateQuestions(email, stage_index, table_path, file_type) VALUES {0};".format(
+            str(private_questions))
         curser.execute(query)
         self.__conn.commit()
 
-    def get_privateQuestions(self) -> pd.DataFrame:
+    def get_privateQuestionsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM PrivateQuestions;"
         curser.execute(query)
@@ -193,7 +190,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_privateQuestionsTable(self, path: str, file_type: str, index: bool):
-        private_questions_table = self.get_stages()
+        private_questions_table = self.get_privateQuestionsTable()
         if file_type == 'csv':
             private_questions_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -201,11 +198,12 @@ class SqlServer(object):
 
     def add_form(self, form: Form):
         curser = self.__conn.cursor()
-        query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES {0};".format(str(form))
+        query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES {0};".format(
+            str(form))
         curser.execute(query)
         self.__conn.commit()
 
-    def get_forms(self) -> pd.DataFrame:
+    def get_formsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Forms;"
         curser.execute(query)
@@ -218,12 +216,13 @@ class SqlServer(object):
         table = FormsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=FormsTable.get_sql_cols()):
-            query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES ({0});".format(row)
+            query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES ({0});".format(
+                row)
             curser.execute(query)
         self.__conn.commit()
 
     def export_formsTable(self, path: str, file_type: str, index: bool):
-        forms_table = self.get_forms()
+        forms_table = self.get_formsTable()
         if file_type == 'csv':
             forms_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -235,7 +234,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_formsAnswers(self) -> pd.DataFrame:
+    def get_formsAnswersTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM FormAnswers;"
         curser.execute(query)
@@ -253,7 +252,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_formsAnswersTable(self, path: str, file_type: str, index: bool):
-        forms_answers_table = self.get_formsAnswers()
+        forms_answers_table = self.get_formsAnswersTable()
         if file_type == 'csv':
             forms_answers_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -266,7 +265,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_candidates(self) -> pd.DataFrame:
+    def get_candidatesTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Candidates;"
         curser.execute(query)
@@ -274,6 +273,130 @@ class SqlServer(object):
         data = pd.DataFrame(curser.fetchall(), columns=columns)
         self.__conn.commit()
         return data
+
+    def get_candidate(self, email: str) -> list[str]:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in CandidatesTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+
+        if data.shape[0] != 1:
+            return []
+        else:
+            candidate = Candidate(email=email,
+                                  first_name=data['first_name'][0],
+                                  last_name=data['last_name'][0],
+                                  stage_index=data['stage_index'][0],
+                                  status=data['status'][0])
+            return candidate.to_json_list()
+
+    def get_candidate_forms_info(self, email: str) -> list[tuple[int, list[dict]]]:
+        curser = self.__conn.cursor()
+        relevant_forms = "SELECT F.stage_index, F.responses_file_path, F.file_type, A.row_index FROM Candidates AS C, Forms AS F, FormsAnswers AS A " \
+                         "WHERE C.stage_index >= F.stage_index AND C.email={0} AND F.form_id=A.form_id AND C.email=A.email" \
+                         " ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
+        curser.execute(relevant_forms)
+        relevant_forms = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type", "row_index"])
+
+        forms = []
+        for _, row in relevant_forms.iterrows():
+            stage_index = row['stage_index']
+            file_path = row['file_path']
+            file_type = row['file_type']
+            row_index = row['row_index']
+            form_answers = Table.get_row_as_json_list(path=file_path, file_type=file_type, row_index=row_index)
+            forms.append((stage_index, form_answers))
+        self.__conn.commit()
+        return forms
+
+    def get_candidate_generalQuestions_info(self, email: str) -> list[tuple[int, list[dict]]]:
+        curser = self.__conn.cursor()
+        general = []
+        general_questions = "SELECT G.stage_index, G.file_path, G.file_type FROM Candidates AS C, GeneralQuestions AS G " \
+                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
+        curser.execute(general_questions)
+        general_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
+        for _, row in general_questions.iterrows():
+            stage_index = row['stage_index']
+            file_path = row['file_path']
+            file_type = row['file_type']
+            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל', value=email)
+            general_answers = Table.row_to_json_list(row=row)
+            general.append((stage_index, general_answers))
+        self.__conn.commit()
+        return general
+
+    def get_candidate_privateQuestions_info(self, email: str) -> list[tuple[int, list[dict]]]:
+        curser = self.__conn.cursor()
+        private = []
+        private_questions = "SELECT P.stage_index, P.file_path, P.file_type FROM Candidates AS C, PrivateQuestions AS P " \
+                            "WHERE C.stage_index >= P.stage_index AND C.email=P.email AND C.email={0} " \
+                            "ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
+        curser.execute(private_questions)
+        private_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
+        for _, row in private_questions.iterrows():
+            stage_index = row['stage_index']
+            file_path = row['file_path']
+            file_type = row['file_type']
+            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל', value=email)
+            private_answers = Table.row_to_json_list(row=row)
+            private.append((stage_index, private_answers))
+        self.__conn.commit()
+        return private
+
+    def get_candidate_grades_info(self, email: str):
+        curser = self.__conn.cursor()
+        grades = []
+        grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes FROM Candidate AS C, Grades AS G " \
+                       "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index".format(f"\'{email}\'")
+
+        curser.execute(grades_query)
+        grades_table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "grade", "passed", "notes"])
+        for _, row in grades_table.iterrows():
+            stage_index = row['stage_index']
+            g = row['grade']
+            passed = row['passed']
+            notes = row['notes']
+            grade = Grade(email=email, stage_index=stage_index, grade=g, passed=passed, notes=notes)
+            grades.append((stage_index, grade.to_json_list()))
+
+        self.__conn.commit()
+        return grades
+
+    def get_candidate_entire_info(self, email: str) -> list[dict]:
+        general = self.get_candidate_generalQuestions_info(email=email)
+        forms = self.get_candidate_forms_info(email=email)
+        private = self.get_candidate_privateQuestions_info(email=email)
+        grades = self.get_candidate_grades_info(email=email)
+
+        curser = self.__conn.cursor()
+        query = "SELECT stage_index FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        curser.execute(query)
+        stage_index = pd.DataFrame(curser.fetchall(), columns=['stage_index'])['stage_index'][0]
+        self.__conn.commit()
+
+        answers = []
+        for index in range(stage_index + 1):
+            answer = dict()
+            answer['stage'] = index
+
+            # the inner list has at most one list[dict]
+            answer['general'] = sum([list_dict for stage_index, list_dict in general if stage_index == index], [])
+
+            # the inner list has at most one list[dict]
+            answer['private'] = sum([list_dict for stage_index, list_dict in private if stage_index == index], [])
+
+            # the inner list has one list[dict] for each form tha candidate answered that relevant to the current stage index
+            answer['forms'] = sum([list_dict for stage_index, list_dict in forms if stage_index == index], [])
+
+            # the inner list has at most one list[dict]
+            answer['grade'] = sum([list_dict for stage_index, list_dict in grades if stage_index == index], [])
+
+            answers.append(answer)
+        return answers
+
 
     def load_candidatesTable(self, path: str, file_type: str, hebrew_table: bool):
         table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
@@ -285,7 +408,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_candidatesTable(self, path: str, file_type: str, index: bool):
-        candidates_table = self.get_candidates()
+        candidates_table = self.get_candidatesTable()
         if file_type == 'csv':
             candidates_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -298,7 +421,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_generalQuestions(self) -> pd.DataFrame:
+    def get_generalQuestionsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM GeneralQuestions;"
         curser.execute(query)
@@ -317,7 +440,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_generalQuestionsTable(self, path: str, file_type: str, index: bool):
-        general_questions_table = self.get_generalQuestions()
+        general_questions_table = self.get_generalQuestionsTable()
         if file_type == 'csv':
             general_questions_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -334,4 +457,3 @@ class SqlServer(object):
         :return:
         """
         pass
-
