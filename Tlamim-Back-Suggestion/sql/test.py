@@ -9,7 +9,7 @@ server.clear_tables()
 
 
 def test1():
-    base_path = fr"{os.getcwd()}\xlsx"
+    base_path = fr"{os.getcwd()}\tables\xlsx"
 
     stages_table_path = fr"{base_path}\stagesTable.xlsx"
     server.load_stagesTable(path=stages_table_path, file_type="xlsx", hebrew_table=True)
