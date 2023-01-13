@@ -1,3 +1,4 @@
+import os
 import sqlite3 as sql
 
 from entities.stage import Stage
@@ -117,7 +118,7 @@ class SqlServer(object):
 
     def get_stagesTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
-        query = "SELECT * FROM Stages;"
+        query = "SELECT * FROM Stages ORDER BY stage_index ASC;"
         curser.execute(query)
         columns = [col_name for col_name, _, _ in StagesTable.get_sql_cols()]
         data = pd.DataFrame(curser.fetchall(), columns=columns)
@@ -192,11 +193,31 @@ class SqlServer(object):
 
     def load_privateQuestionsTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = PrivateQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        SqlServer.refresh_privateQuestionsTablePaths(table=table, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=PrivateQuestionsTable.get_sql_cols()):
             query = "INSERT INTO PrivateQuestions(email, stage_index, table_path, file_type) VALUES ({0});".format(row)
             curser.execute(query)
         self.__conn.commit()
+
+    @staticmethod
+    def refresh_privateQuestionsTablePaths(table: PrivateQuestionsTable, hebrew_table = False):
+        header = fr"{os.getcwd()}\data\privateQuestions"
+        file_path = "table_path" if not hebrew_table else "מיקום קובץ"
+        file_type = "file_type" if not hebrew_table else "סוג קובץ"
+        columns = table.get_cols()
+        refreshed = []
+        for _, row in table.table.iterrows():
+            refreshed_row = []
+            for col in columns:
+                if col == file_path:
+                    path = "{0}\\{1}\\{2}".format(header, row[file_type], row[file_path].split('\\')[-1])
+                    refreshed_row.append(path)
+                else:
+                    refreshed_row.append(row[col])
+            refreshed.append(refreshed_row)
+        refreshed_table = pd.DataFrame(refreshed, columns=columns)
+        table.table = refreshed_table
 
     def export_privateQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         private_questions_table = self.get_privateQuestionsTable()
@@ -225,12 +246,32 @@ class SqlServer(object):
 
     def load_formsTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = FormsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        SqlServer.refresh_formsTablePaths(table=table, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=FormsTable.get_sql_cols()):
             query = "INSERT INTO Forms(form_id, form_link, stage_index, responses_file_path, file_type) VALUES ({0});".format(
                 row)
             curser.execute(query)
         self.__conn.commit()
+
+    @staticmethod
+    def refresh_formsTablePaths(table: FormsTable, hebrew_table=False):
+        header = fr"{os.getcwd()}\data\formsAnswers"
+        file_path = "responses_file_path" if not hebrew_table else "מיקום קובץ תשובות"
+        file_type = "file_type" if not hebrew_table else "סוג קובץ"
+        columns = table.get_cols()
+        refreshed = []
+        for _, row in table.table.iterrows():
+            refreshed_row = []
+            for col in columns:
+                if col == file_path:
+                    path = "{0}\\{1}\\{2}".format(header, row[file_type], row[file_path].split('\\')[-1])
+                    refreshed_row.append(path)
+                else:
+                    refreshed_row.append(row[col])
+            refreshed.append(refreshed_row)
+        refreshed_table = pd.DataFrame(refreshed, columns=columns)
+        table.table = refreshed_table
 
     def export_formsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         forms_table = self.get_formsTable()
@@ -390,15 +431,25 @@ class SqlServer(object):
         grades = self.get_candidate_grades_info(email=email)
 
         curser = self.__conn.cursor()
-        query = "SELECT stage_index FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
         curser.execute(query)
-        stage_index = pd.DataFrame(curser.fetchall(), columns=['stage_index'])['stage_index'][0]
+        candidate = pd.DataFrame(curser.fetchall(),
+                                 columns=["email", "first_name", "last_name", "stage_index", "status"])
+        stage_index = candidate['stage_index'][0]
+        first_name = candidate['first_name'][0]
+        last_name = candidate['last_name'][0]
+        status = candidate['status'][0]
+        candidate = Candidate(email=email, first_name=first_name, last_name=last_name, stage_index=stage_index,
+                              status=status)
         self.__conn.commit()
 
-        answers = []
+        stages_table = self.get_stagesTable()
+        stages = []
+        answers = candidate.to_json_list()[0]
         for index in range(stage_index + 1):
             answer = dict()
-            answer['stage'] = index
+            answer['stage_index'] = stages_table['stage_index'][index]
+            answer['stage_name'] = stages_table['stage_name'][index]
 
             # the inner list has at most one list[dict]
             answer['general'] = sum([list_dict for stage_index, list_dict in general if stage_index == index], [])
@@ -410,10 +461,11 @@ class SqlServer(object):
             answer['forms'] = sum([list_dict for stage_index, list_dict in forms if stage_index == index], [])
 
             # the inner list has at most one list[dict]
-            answer['grade'] = sum([list_dict for stage_index, list_dict in grades if stage_index == index], [])
+            answer['grade_info'] = sum([list_dict for stage_index, list_dict in grades if stage_index == index], [])
 
-            answers.append(answer)
-        return answers
+            stages.append(answer)
+        answers['stages'] = stages
+        return [answers]
 
     def load_candidatesTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
@@ -451,12 +503,32 @@ class SqlServer(object):
 
     def load_generalQuestionsTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = GeneralQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
+        SqlServer.refresh_generalQuestionsTablePaths(table=table, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=GeneralQuestionsTable.get_sql_cols()):
             query = "INSERT INTO GeneralQuestions(stage_index, file_path, file_type) VALUES ({0});".format(
                 row)
             curser.execute(query)
         self.__conn.commit()
+
+    @staticmethod
+    def refresh_generalQuestionsTablePaths(table: GeneralQuestionsTable, hebrew_table=False):
+        header = fr"{os.getcwd()}\data\generalQuestions"
+        file_path = "file_path" if not hebrew_table else "מיקום קובץ"
+        file_type = "file_type" if not hebrew_table else "סוג קובץ"
+        columns = table.get_cols()
+        refreshed = []
+        for _, row in table.table.iterrows():
+            refreshed_row = []
+            for col in columns:
+                if col == file_path:
+                    path = "{0}\\{1}\\{2}".format(header, row[file_type], row[file_path].split('\\')[-1])
+                    refreshed_row.append(path)
+                else:
+                    refreshed_row.append(row[col])
+            refreshed.append(refreshed_row)
+        refreshed_table = pd.DataFrame(refreshed, columns=columns)
+        table.table = refreshed_table
 
     def export_generalQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         general_questions_table = self.get_generalQuestionsTable()

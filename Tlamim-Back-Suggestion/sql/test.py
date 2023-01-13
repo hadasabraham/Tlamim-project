@@ -1,5 +1,8 @@
 import os
 from sql.SqlServer import SqlServer
+from sql.entities.form import Form
+from sql.entities.generalQuestions import GeneralQuestions
+from sql.entities.privateQuestions import PrivateQuestions
 
 server = SqlServer()
 server.drop_tables()
@@ -34,7 +37,6 @@ def test1():
     candidate0 = server.get_candidate_entire_info(email="candidate0@gmail.com")
     candidate1 = server.get_candidate_entire_info(email="candidate1@gmail.com")
     candidate2 = server.get_candidate_entire_info(email="candidate2@gmail.com")
-
 
     print("Candidate0")
     print(server.get_candidate(email="candidate0@gmail.com"))

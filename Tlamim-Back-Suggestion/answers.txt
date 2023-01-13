@@ -1,0 +1,11 @@
+Candidate0
+[{'email': 'candidate0@gmail.com', 'name': 'משה שמחון', 'stage': 0, 'status': ''}]
+[{'email': 'candidate0@gmail.com', 'name': 'משה שמחון', 'stage': 0, 'status': '', 'stages': [{'stage': 0, 'general': [{'title': 'גיל', 'answer': 24}, {'title': 'משרת במילואים? (כן/לא)', 'answer': 'כן'}], 'private': [], 'forms': [{'title': 'מצב משפחתי', 'answer': 'רווק'}, {'title': 'מספר אחים', 'answer': 1}, {'title': 'מגמה', 'answer': 'מחשבים'}], 'grade_info': [{'grade': 7.0, 'passed': '', 'notes': 'מתלבט'}]}]}]
+
+Candidate1
+[{'email': 'candidate1@gmail.com', 'name': 'דוד צמח', 'stage': 1, 'status': ''}]
+[{'email': 'candidate1@gmail.com', 'name': 'דוד צמח', 'stage': 1, 'status': '', 'stages': [{'stage': 0, 'general': [{'title': 'גיל', 'answer': 23}, {'title': 'משרת במילואים? (כן/לא)', 'answer': 'כן '}], 'private': [], 'forms': [{'title': 'מצב משפחתי', 'answer': 'נשוי'}, {'title': 'מספר אחים', 'answer': 2}, {'title': 'מגמה', 'answer': 'פילוסופיה'}], 'grade_info': [{'grade': 9.0, 'passed': 'True', 'notes': ''}]}, {'stage': 1, 'general': [{'title': 'חממה', 'answer': 'עפולה'}], 'private': [], 'forms': [{'title': 'מודל לחיקוי', 'answer': 'ביל גייטס'}], 'grade_info': []}]}]
+
+Candidate2
+[{'email': 'candidate2@gmail.com', 'name': 'שלום גבע', 'stage': 2, 'status': 'ממתין'}]
+[{'email': 'candidate2@gmail.com', 'name': 'שלום גבע', 'stage': 2, 'status': 'ממתין', 'stages': [{'stage': 0, 'general': [{'title': 'גיל', 'answer': 26}, {'title': 'משרת במילואים? (כן/לא)', 'answer': 'לא'}], 'private': [], 'forms': [{'title': 'מצב משפחתי', 'answer': 'נשוי +1'}, {'title': 'מספר אחים', 'answer': 0}, {'title': 'מגמה', 'answer': 'עריכת דין'}], 'grade_info': [{'grade': 15.0, 'passed': 'True', 'notes': 'ממש נלהב'}]}, {'stage': 1, 'general': [{'title': 'חממה', 'answer': 'חדרה'}], 'private': [], 'forms': [{'title': 'מודל לחיקוי', 'answer': 'שלמה ארצי'}], 'grade_info': [{'grade': 10.0, 'passed': 'True', 'notes': ''}]}, {'stage': 2, 'general': [], 'private': [{'title': 'מידע נוסף', 'answer': 'החלום שלי הוא ללמוד במשך הרבה זמן ואני לא יכול להגשים אותו בלי העזרה שלכם'}, {'title': 'שטויות', 'answer': 'עגבניות'}], 'forms': [], 'grade_info': [{'grade': 20.0, 'passed': 'False', 'notes': ''}]}]}]
