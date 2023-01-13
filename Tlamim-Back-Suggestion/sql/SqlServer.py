@@ -1,5 +1,4 @@
 import sqlite3 as sql
-import pandas as pd
 
 from entities.stage import Stage
 from entities.form import Form
@@ -9,7 +8,6 @@ from entities.generalQuestions import GeneralQuestions
 from entities.formAnswers import FormAnswers
 from entities.privateQuestions import PrivateQuestions
 from entities.table import *
-import ast
 
 
 class SqlServer(object):
@@ -134,8 +132,11 @@ class SqlServer(object):
             curser.execute(query)
         self.__conn.commit()
 
-    def export_stagesTable(self, path: str, file_type: str, index: bool):
+    def export_stagesTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         stages_table = self.get_stagesTable()
+        if hebrew_table:
+            stages_table.columns = [heb for _, _, heb in StagesTable.get_sql_cols()]
+
         if file_type == 'csv':
             stages_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -156,7 +157,7 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def load_gradesTable(self, path: str, file_type: str, hebrew_table: bool):
+    def load_gradesTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = GradesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=GradesTable.get_sql_cols()):
@@ -164,8 +165,10 @@ class SqlServer(object):
             curser.execute(query)
         self.__conn.commit()
 
-    def export_gradesTable(self, path: str, file_type: str, index: bool):
+    def export_gradesTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         grades_table = self.get_gradesTable()
+        if hebrew_table:
+            grades_table.columns = [heb for _, _, heb in GradesTable.get_sql_cols()]
         if file_type == 'csv':
             grades_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -187,7 +190,7 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def load_privateQuestionsTable(self, path: str, file_type: str, hebrew_table: bool):
+    def load_privateQuestionsTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = PrivateQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=PrivateQuestionsTable.get_sql_cols()):
@@ -195,8 +198,10 @@ class SqlServer(object):
             curser.execute(query)
         self.__conn.commit()
 
-    def export_privateQuestionsTable(self, path: str, file_type: str, index: bool):
+    def export_privateQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         private_questions_table = self.get_privateQuestionsTable()
+        if hebrew_table:
+            private_questions_table.columns = [heb for _, _, heb in PrivateQuestionsTable.get_sql_cols()]
         if file_type == 'csv':
             private_questions_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -218,7 +223,7 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def load_formsTable(self, path: str, file_type: str, hebrew_table: bool):
+    def load_formsTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = FormsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=FormsTable.get_sql_cols()):
@@ -227,8 +232,10 @@ class SqlServer(object):
             curser.execute(query)
         self.__conn.commit()
 
-    def export_formsTable(self, path: str, file_type: str, index: bool):
+    def export_formsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         forms_table = self.get_formsTable()
+        if hebrew_table:
+            forms_table.columns = [heb for _, _, heb in FormsTable.get_sql_cols()]
         if file_type == 'csv':
             forms_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -249,7 +256,7 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def load_formsAnswersTable(self, path: str, file_type: str, hebrew_table: bool):
+    def load_formsAnswersTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = FormsAnswersTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=FormsAnswersTable.get_sql_cols()):
@@ -257,8 +264,10 @@ class SqlServer(object):
             curser.execute(query)
         self.__conn.commit()
 
-    def export_formsAnswersTable(self, path: str, file_type: str, index: bool):
+    def export_formsAnswersTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         forms_answers_table = self.get_formsAnswersTable()
+        if hebrew_table:
+            forms_answers_table.columns = [heb for _, _, heb in FormsAnswersTable.get_sql_cols()]
         if file_type == 'csv':
             forms_answers_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -321,15 +330,18 @@ class SqlServer(object):
         curser = self.__conn.cursor()
         general = []
         general_questions = "SELECT G.stage_index, G.file_path, G.file_type FROM Candidates AS C, GeneralQuestions AS G " \
-                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
+                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(
+            f"\'{email}\'")
         curser.execute(general_questions)
         general_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
         for _, row in general_questions.iterrows():
             stage_index = int(row['stage_index'])
             file_path = row['file_path']
             file_type = row['file_type']
-            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל', value=email)
-            general_answers = Table.row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל', include_key=False)
+            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל',
+                                 value=email)
+            general_answers = Table.row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל',
+                                                     include_key=False)
             general.append((stage_index, general_answers))
         self.__conn.commit()
         return general
@@ -403,8 +415,7 @@ class SqlServer(object):
             answers.append(answer)
         return answers
 
-
-    def load_candidatesTable(self, path: str, file_type: str, hebrew_table: bool):
+    def load_candidatesTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=CandidatesTable.get_sql_cols()):
@@ -413,8 +424,10 @@ class SqlServer(object):
             curser.execute(query)
         self.__conn.commit()
 
-    def export_candidatesTable(self, path: str, file_type: str, index: bool):
+    def export_candidatesTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         candidates_table = self.get_candidatesTable()
+        if hebrew_table:
+            candidates_table.columns = [heb for _, _, heb in CandidatesTable.get_sql_cols()]
         if file_type == 'csv':
             candidates_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
@@ -436,18 +449,19 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def load_generalQuestionsTable(self, path: str, file_type: str, hebrew_table: bool):
+    def load_generalQuestionsTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = GeneralQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=GeneralQuestionsTable.get_sql_cols()):
-
             query = "INSERT INTO GeneralQuestions(stage_index, file_path, file_type) VALUES ({0});".format(
                 row)
             curser.execute(query)
         self.__conn.commit()
 
-    def export_generalQuestionsTable(self, path: str, file_type: str, index: bool):
+    def export_generalQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
         general_questions_table = self.get_generalQuestionsTable()
+        if hebrew_table:
+            general_questions_table.columns = [heb for _, _, heb in GeneralQuestionsTable.get_sql_cols()]
         if file_type == 'csv':
             general_questions_table.to_csv(path, index=index)
         elif file_type == 'xlsx':
