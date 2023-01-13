@@ -35,7 +35,11 @@ class Table(object):
             if not include_key and (str(question) == english_key or str(question) == hebrew_key):
                 continue
             ans['title'] = str(question)
-            ans['answer'] = row[question][row.index[0]]
+            answer = row[question][row.index[0]]
+            if answer is None or answer is np.nan or str(answer).strip().lower() == 'null' or str(answer).strip().lower() == 'nan':
+                # the entry in this column is empty
+                continue
+            ans['answer'] = answer
             answers.append(ans)
         return answers
 

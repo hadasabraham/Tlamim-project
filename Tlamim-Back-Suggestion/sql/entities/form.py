@@ -14,10 +14,10 @@ class Form(object):
             # folder according to type of file (i.e. xlsx\csv folder)
             header = os.getcwd().split("\\")[:-1]
             header = "\\".join(header)
-            if file_type == 'xlsx':
-                self.responses_file_path = fr"{header}\xlsx\{form_id}.xlsx"
+            if file_type.strip() == 'xlsx':
+                self.responses_file_path = fr"{header}\formsAnswers\xlsx\{form_id}.xlsx"
             else:
-                self.responses_file_path = fr"{header}\csv\{form_id}.csv"
+                self.responses_file_path = fr"{header}\formsAnswers\csv\{form_id}.csv"
 
         self.file_type = file_type.strip()
 

@@ -1,6 +1,5 @@
 import os
 from sql.SqlServer import SqlServer
-from sql.entities.grade import Grade
 
 server = SqlServer()
 server.drop_tables()
@@ -9,7 +8,7 @@ server.clear_tables()
 
 
 def test1():
-    base_path = fr"{os.getcwd()}\tables\xlsx"
+    base_path = fr"{os.getcwd()}\data\tables\xlsx"
 
     stages_table_path = fr"{base_path}\stagesTable.xlsx"
     server.load_stagesTable(path=stages_table_path, file_type="xlsx", hebrew_table=True)

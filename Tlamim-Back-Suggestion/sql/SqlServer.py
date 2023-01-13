@@ -40,7 +40,7 @@ class SqlServer(object):
         curser.execute(query)
 
         query = "CREATE TABLE IF NOT EXISTS FormsAnswers(email TEXT, form_id TEXT, row_index INTEGER NOT NULL, " \
-                "CHECK(row_index >= 0), PRIMARY KEY(email, form_id), " \
+                "CHECK(row_index >= 1), PRIMARY KEY(email, form_id), " \
                 "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
                 "FOREIGN KEY(form_id) REFERENCES Forms(form_id) ON DELETE CASCADE);"
         curser.execute(query)
