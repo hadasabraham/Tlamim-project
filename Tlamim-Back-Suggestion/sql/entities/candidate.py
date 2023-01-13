@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Candidate(object):
 
     def __init__(self, email: str, first_name: str, last_name: str, stage_index: int = 0, status: str = None):
@@ -21,6 +24,6 @@ class Candidate(object):
         d['email'] = self.email
         d['name'] = name
         d['stage'] = stage
-        d['status'] = self.status if self.status else ''
+        d['status'] = self.status if self.status is not None and 'nan' not in self.status else ''
         return [d]
 

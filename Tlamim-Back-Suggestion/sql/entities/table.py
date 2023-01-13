@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -27,12 +28,14 @@ class Table(object):
         return row
 
     @staticmethod
-    def row_to_json_list(row: pd.DataFrame):
+    def row_to_json_list(row: pd.DataFrame, english_key: str = "email", hebrew_key: str = 'דוא"ל', include_key=True):
         answers = []
         for question in row.columns.tolist():
             ans = dict()
+            if not include_key and (str(question) == english_key or str(question) == hebrew_key):
+                continue
             ans['title'] = str(question)
-            ans['answer'] = row[question][0]
+            ans['answer'] = row[question][row.index[0]]
             answers.append(ans)
         return answers
 
@@ -74,11 +77,11 @@ class Table(object):
             entry = []
             for col_eng_name, col_type, col_heb_name in sql_columns:
                 col_name = col_heb_name if self.hebrew_table else col_eng_name
-                if table_row[col_name] == 'NULL':
+                if str(table_row[col_name]).lower() == 'null' or table_row[col_name] is np.nan or 'nan' == str(table_row[col_name]).lower():
                     # nullable property
                     val = "NULL"
                 elif col_type == 'str':
-                    v = table_row[col_name].replace("\'", "\'\'")
+                    v = str(table_row[col_name]).replace("\'", "\'\'")
                     val = f"\'{v}\'"
                 elif col_type == 'int':
                     val = f"{table_row[col_name]}"
@@ -124,7 +127,7 @@ class GeneralQuestionsTable(Table):
     @staticmethod
     def get_sql_cols():
         return [("stage_index", "int", "מספר שלב"), ("file_path", "str", "מיקום קובץ"),
-                ("file_type", "str", "סוג הקובץ")]
+                ("file_type", "str", "סוג קובץ")]
 
 
 class FormsTable(Table):
@@ -136,7 +139,7 @@ class FormsTable(Table):
     def get_sql_cols():
         return [("form_id", "str", "מזהה"), ("form_link", "str", "קישור"), ("stage_index", "int", "מספר שלב"),
                 ("responses_file_path", "str", "מיקום קובץ תשובות"),
-                ("file_type", "str", "סוג הקובץ")]
+                ("file_type", "str", "סוג קובץ")]
 
 
 class FormsAnswersTable(Table):
@@ -157,7 +160,7 @@ class PrivateQuestionsTable(Table):
     @staticmethod
     def get_sql_cols():
         return [("email", "str", 'דוא"ל'), ("stage_index", "int", "מספר שלב"), ("table_path", "str", "מיקום קובץ"),
-                ("file_type", "str", "סוג הקובץ")]
+                ("file_type", "str", "סוג קובץ")]
 
 
 class GradesTable(Table):

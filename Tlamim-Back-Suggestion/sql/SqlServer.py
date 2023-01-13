@@ -68,6 +68,9 @@ class SqlServer(object):
         query = "DROP TABLE IF EXISTS PrivateQuestions;"
         curser.execute(query)
 
+        query = "DROP TABLE IF EXISTS FormsAnswers;"
+        curser.execute(query)
+
         query = "DROP TABLE IF EXISTS Forms;"
         curser.execute(query)
 
@@ -89,6 +92,9 @@ class SqlServer(object):
         curser.execute(query)
 
         query = "DELETE FROM PrivateQuestions;"
+        curser.execute(query)
+
+        query = "DELETE FROM FormsAnswers;"
         curser.execute(query)
 
         query = "DELETE FROM Forms;"
@@ -230,13 +236,13 @@ class SqlServer(object):
 
     def add_formsAnswers(self, form_answers: FormAnswers):
         curser = self.__conn.cursor()
-        query = "INSERT INTO FormAnswers(email, form_id, row_index) VALUES {0};".format(str(form_answers))
+        query = "INSERT INTO FormsAnswers(email, form_id, row_index) VALUES {0};".format(str(form_answers))
         curser.execute(query)
         self.__conn.commit()
 
     def get_formsAnswersTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
-        query = "SELECT * FROM FormAnswers;"
+        query = "SELECT * FROM FormsAnswers;"
         curser.execute(query)
         columns = [col_name for col_name, _, _ in FormsAnswersTable.get_sql_cols()]
         data = pd.DataFrame(curser.fetchall(), columns=columns)
@@ -247,7 +253,7 @@ class SqlServer(object):
         table = FormsAnswersTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=FormsAnswersTable.get_sql_cols()):
-            query = "INSERT INTO FormAnswers(email, form_id, row_index) VALUES ({0});".format(row)
+            query = "INSERT INTO FormsAnswers(email, form_id, row_index) VALUES ({0});".format(row)
             curser.execute(query)
         self.__conn.commit()
 
@@ -302,7 +308,7 @@ class SqlServer(object):
 
         forms = []
         for _, row in relevant_forms.iterrows():
-            stage_index = row['stage_index']
+            stage_index = int(row['stage_index'])
             file_path = row['file_path']
             file_type = row['file_type']
             row_index = row['row_index']
@@ -319,11 +325,11 @@ class SqlServer(object):
         curser.execute(general_questions)
         general_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
         for _, row in general_questions.iterrows():
-            stage_index = row['stage_index']
+            stage_index = int(row['stage_index'])
             file_path = row['file_path']
             file_type = row['file_type']
             row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל', value=email)
-            general_answers = Table.row_to_json_list(row=row)
+            general_answers = Table.row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל', include_key=False)
             general.append((stage_index, general_answers))
         self.__conn.commit()
         return general
@@ -331,16 +337,16 @@ class SqlServer(object):
     def get_candidate_privateQuestions_info(self, email: str) -> list[tuple[int, list[dict]]]:
         curser = self.__conn.cursor()
         private = []
-        private_questions = "SELECT P.stage_index, P.file_path, P.file_type FROM Candidates AS C, PrivateQuestions AS P " \
+        private_questions = "SELECT P.stage_index, P.table_path, P.file_type FROM Candidates AS C, PrivateQuestions AS P " \
                             "WHERE C.stage_index >= P.stage_index AND C.email=P.email AND C.email={0} " \
                             "ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
         curser.execute(private_questions)
         private_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
         for _, row in private_questions.iterrows():
-            stage_index = row['stage_index']
+            stage_index = int(row['stage_index'])
             file_path = row['file_path']
             file_type = row['file_type']
-            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל', value=email)
+            row = Table.get_row(path=file_path, file_type=file_type, row_index=1)
             private_answers = Table.row_to_json_list(row=row)
             private.append((stage_index, private_answers))
         self.__conn.commit()
@@ -349,13 +355,13 @@ class SqlServer(object):
     def get_candidate_grades_info(self, email: str):
         curser = self.__conn.cursor()
         grades = []
-        grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes FROM Candidate AS C, Grades AS G " \
+        grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes FROM Candidates AS C, Grades AS G " \
                        "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index".format(f"\'{email}\'")
 
         curser.execute(grades_query)
         grades_table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "grade", "passed", "notes"])
         for _, row in grades_table.iterrows():
-            stage_index = row['stage_index']
+            stage_index = int(row['stage_index'])
             g = row['grade']
             passed = row['passed']
             notes = row['notes']
@@ -433,7 +439,8 @@ class SqlServer(object):
     def load_generalQuestionsTable(self, path: str, file_type: str, hebrew_table: bool):
         table = GeneralQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
-        for row in table.get_rows_to_load(sql_columns=CandidatesTable.get_sql_cols()):
+        for row in table.get_rows_to_load(sql_columns=GeneralQuestionsTable.get_sql_cols()):
+
             query = "INSERT INTO GeneralQuestions(stage_index, file_path, file_type) VALUES ({0});".format(
                 row)
             curser.execute(query)
