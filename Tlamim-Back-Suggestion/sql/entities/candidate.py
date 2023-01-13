@@ -17,7 +17,7 @@ class Candidate(object):
             res = f"(\'{self.email}\', \'{self.first_name}\', \'{self.last_name}\', {self.stage_index}, NULL)"
         return res
 
-    def to_json_list(self):
+    def to_json_list(self) -> list[dict]:
         name = self.first_name + " " + self.last_name
         stage = self.stage_index
         d = dict()

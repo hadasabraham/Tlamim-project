@@ -6,7 +6,16 @@ from forms.FormsServer import FormsServer
 class BackendServer(object):
 
     def __init__(self):
-        pass
+        self.__sql_server = SqlServer()
+
+    def get_candidate_summarized(self, email: str) -> list[dict]:
+        return self.__sql_server.get_candidate_summarized(email=email)
+
+    def get_candidate_entire_info(self, email: str) -> list[dict]:
+        return self.__sql_server.get_candidate_entire_info(email=email)
+
+    def search_candidates(self, condition: str) -> list[dict]:
+        return self.__sql_server.search_candidates(condition=condition)
 
     def start_new_cycle(self):
         """

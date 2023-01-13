@@ -39,15 +39,16 @@ def test1():
     candidate2 = server.get_candidate_entire_info(email="candidate2@gmail.com")
 
     print("Candidate0")
-    print(server.get_candidate(email="candidate0@gmail.com"))
+    print(server.get_candidate_summarized(email="candidate0@gmail.com"))
     print(candidate0, end="\r\n\r\n")
     print("Candidate1")
-    print(server.get_candidate(email="candidate1@gmail.com"))
+    print(server.get_candidate_summarized(email="candidate1@gmail.com"))
     print(candidate1, end="\r\n\r\n")
     print("Candidate2")
-    print(server.get_candidate(email="candidate2@gmail.com"))
+    print(server.get_candidate_summarized(email="candidate2@gmail.com"))
     print(candidate2, end="\r\n\r\n")
     server.clear_tables()
+    
 
 
 def main():

@@ -1,6 +1,8 @@
 import os
 import sqlite3 as sql
 
+import pandas as pd
+
 from entities.stage import Stage
 from entities.form import Form
 from entities.candidate import Candidate
@@ -182,7 +184,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_privateQuestionsTable(self) -> pd.DataFrame:
+    def _get_privateQuestionsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM PrivateQuestions;"
         curser.execute(query)
@@ -201,7 +203,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     @staticmethod
-    def refresh_privateQuestionsTablePaths(table: PrivateQuestionsTable, hebrew_table = False):
+    def refresh_privateQuestionsTablePaths(table: PrivateQuestionsTable, hebrew_table=False):
         header = fr"{os.getcwd()}\data\privateQuestions"
         file_path = "table_path" if not hebrew_table else "מיקום קובץ"
         file_type = "file_type" if not hebrew_table else "סוג קובץ"
@@ -220,7 +222,7 @@ class SqlServer(object):
         table.table = refreshed_table
 
     def export_privateQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
-        private_questions_table = self.get_privateQuestionsTable()
+        private_questions_table = self._get_privateQuestionsTable()
         if hebrew_table:
             private_questions_table.columns = [heb for _, _, heb in PrivateQuestionsTable.get_sql_cols()]
         if file_type == 'csv':
@@ -235,7 +237,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_formsTable(self) -> pd.DataFrame:
+    def _get_formsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Forms;"
         curser.execute(query)
@@ -274,7 +276,7 @@ class SqlServer(object):
         table.table = refreshed_table
 
     def export_formsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
-        forms_table = self.get_formsTable()
+        forms_table = self._get_formsTable()
         if hebrew_table:
             forms_table.columns = [heb for _, _, heb in FormsTable.get_sql_cols()]
         if file_type == 'csv':
@@ -282,13 +284,66 @@ class SqlServer(object):
         elif file_type == 'xlsx':
             forms_table.to_excel(path, index=index)
 
-    def add_formsAnswers(self, form_answers: FormAnswers):
+    def _add_formsAnswers(self, form_answers: FormAnswers):
         curser = self.__conn.cursor()
         query = "INSERT INTO FormsAnswers(email, form_id, row_index) VALUES {0};".format(str(form_answers))
         curser.execute(query)
         self.__conn.commit()
 
-    def get_formsAnswersTable(self) -> pd.DataFrame:
+    def _get_form_answers_path(self, form_id: str) -> str:
+        curser = self.__conn.cursor()
+        query = "SELECT responses_file_path FROM Forms WHERE form_id={0}".format(f"\'{form_id}\'")
+        curser.execute(query)
+        path = pd.DataFrame(curser.fetchall(), columns=["responses_file_path"])['responses_file_path'][0]
+        self.__conn.commit()
+        return path
+
+    def _get_who_answers_to_form(self, form_id) -> pd.DataFrame:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM FormsAnswers WHERE form_id={0};".format(f"\'{form_id}\'")
+        curser.execute(query)
+        columns = [col_name for col_name, _, _ in FormsAnswersTable.get_sql_cols()]
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
+
+    def add_form_response(self, form_id: str, responses_file_type: str, timestamp, email, answers: list[dict]):
+        """
+        # the timestamps saved as string so comparing timestamp is not trivial
+        data = Table(path=self._get_form_answers_path(form_id=form_id), table_type=responses_file_type,
+                     hebrew_table=True)
+        questions = [answer['question'] for answer in answers]
+        if len(data.get_cols()) == 0:
+            # this is the first answer in the table so need to set the questions
+            data.table.columns = questions
+        already_answered = self._get_who_answers_to_form(form_id=form_id)
+
+        # the timestamps saved as string so comparing timestamp is not trivial and can't be done on the dataframe column
+        exist_and_replace = already_answered[
+            (already_answered['email'] == email) & already_answered['timestamp'] < timestamp]
+        changed = False
+        if len(exist_and_replace.index) == 1:
+            # replace answer
+            row_index = exist_and_replace['row_index'][0] - 1
+            data.table.loc[row_index] = [answer['answer'] for answer in answers]
+            changed = True
+        else:
+            exist = already_answered[already_answered['email'] == email]
+            if len(exist.index) == 0:  # new candidate answered
+                row_index = len(data.table.index)
+                data.table.loc[row_index] = [answer['answer'] for answer in answers]
+                form_answers = FormAnswers(email=email, form_id=form_id, row_index=row_index + 1, timestamp=timestamp)
+                self._add_formsAnswers(form_answers=form_answers)
+                changed = True
+            # otherwise no change required
+        if changed:
+            data.save_changes()
+        """
+        # comparing timestamps strings is not trivial and need to be solved
+        raise NotImplemented
+
+
+    def _get_formsAnswersTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM FormsAnswers;"
         curser.execute(query)
@@ -306,7 +361,7 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_formsAnswersTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
-        forms_answers_table = self.get_formsAnswersTable()
+        forms_answers_table = self._get_formsAnswersTable()
         if hebrew_table:
             forms_answers_table.columns = [heb for _, _, heb in FormsAnswersTable.get_sql_cols()]
         if file_type == 'csv':
@@ -330,7 +385,7 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def get_candidate(self, email: str) -> list[str]:
+    def get_candidate_summarized(self, email: str) -> list[dict]:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
         curser.execute(query)
@@ -371,8 +426,7 @@ class SqlServer(object):
         curser = self.__conn.cursor()
         general = []
         general_questions = "SELECT G.stage_index, G.file_path, G.file_type FROM Candidates AS C, GeneralQuestions AS G " \
-                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(
-            f"\'{email}\'")
+                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
         curser.execute(general_questions)
         general_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
         for _, row in general_questions.iterrows():
@@ -381,8 +435,8 @@ class SqlServer(object):
             file_type = row['file_type']
             row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל',
                                  value=email)
-            general_answers = Table.row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל',
-                                                     include_key=False)
+            general_answers = Table.questions_row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל',
+                                                               include_key=False)
             general.append((stage_index, general_answers))
         self.__conn.commit()
         return general
@@ -400,7 +454,7 @@ class SqlServer(object):
             file_path = row['file_path']
             file_type = row['file_type']
             row = Table.get_row(path=file_path, file_type=file_type, row_index=1)
-            private_answers = Table.row_to_json_list(row=row)
+            private_answers = Table.questions_row_to_json_list(row=row)
             private.append((stage_index, private_answers))
         self.__conn.commit()
         return private
@@ -492,7 +546,7 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-    def get_generalQuestionsTable(self) -> pd.DataFrame:
+    def _get_generalQuestionsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM GeneralQuestions;"
         curser.execute(query)
@@ -531,7 +585,7 @@ class SqlServer(object):
         table.table = refreshed_table
 
     def export_generalQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
-        general_questions_table = self.get_generalQuestionsTable()
+        general_questions_table = self._get_generalQuestionsTable()
         if hebrew_table:
             general_questions_table.columns = [heb for _, _, heb in GeneralQuestionsTable.get_sql_cols()]
         if file_type == 'csv':
@@ -539,14 +593,46 @@ class SqlServer(object):
         elif file_type == 'xlsx':
             general_questions_table.to_excel(path, index=index)
 
-    def search(self):
-        pass
+    def search_candidates(self, condition: str) -> list[dict]:
+        variables = CandidatesTable.get_sql_cols()
+        sql_cond = SqlServer._parse_condition(condition=condition, variables=variables)
+        if not sql_cond:
+            return []
+        else:
+            curser = self.__conn.cursor()
+            query = "SELECT * FROM Candidates WHERE {0};".format(sql_cond)
+            curser.execute(query)
+            sat = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in variables])
+            return Table.dataframe_to_json_list(table=sat)
 
-    def close_stage(self, stage_index):
-        """
-        Decide to eliminate all the candidates that haven't passed the stage with stage_index until now.
-        In the decisions notes add the note: "timeout" for the relevant candidates
-        :param stage_index:
-        :return:
-        """
-        pass
+    @staticmethod
+    def _parse_condition(condition: str, variables: list[tuple[str, str, str]]) -> str | None:
+        condition = condition.strip()
+        conditions = condition.split(",")
+        sql_conditions = []
+        for cond in conditions:
+            key_val = cond.split("=")
+            if len(key_val) != 2:
+                return None
+            pack = SqlServer._get_key_val_type(key_val=key_val, variables=variables)
+            if not pack:
+                return None
+            else:
+                key, val, val_type = pack
+                if val_type == 'str':
+                    sql_conditions.append(f"{key}=\'{val}\'")
+                elif val_type == 'int':
+                    sql_conditions.append(f"{key}={val}")
+        sql_cond = " AND ".join(sql_conditions)
+        return sql_cond.strip()
+
+    @staticmethod
+    def _get_key_val_type(key_val: list[str], variables: list[tuple[str, str, str]]) -> tuple[str, str, str] | None:
+        key_val[0] = key_val[0].strip()
+        key_val[1] = key_val[1].strip()
+        for eng_symbol, var_type, heb_symbol in variables:
+            if key_val[0] == heb_symbol:
+                return eng_symbol, key_val[1], var_type
+            elif key_val[1] == heb_symbol:
+                return eng_symbol, key_val[0], var_type
+        return None
