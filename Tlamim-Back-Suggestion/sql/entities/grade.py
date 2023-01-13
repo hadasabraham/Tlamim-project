@@ -16,6 +16,6 @@ class Grade(object):
     def to_json_list(self) -> list[dict]:
         d = dict()
         d['grade'] = self.grade
-        d['passed'] = self.passed if self.passed is not None else ''
+        d['passed'] = ('True' if self.passed else 'False') if self.passed is not None else ''
         d['notes'] = self.notes if self.notes is not None and 'nan' != self.notes else ''
         return [d]

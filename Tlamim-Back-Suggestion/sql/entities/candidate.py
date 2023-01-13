@@ -8,7 +8,7 @@ class Candidate(object):
         self.first_name = first_name.strip()
         self.last_name = last_name.strip()
         self.stage_index = stage_index
-        self.status = status.strip() if status is not None else status
+        self.status = status.strip() if status is not None and status.strip().lower() != 'nan' and status.strip().lower() != 'null' else None
 
     def __str__(self):
         if self.status:
@@ -24,6 +24,6 @@ class Candidate(object):
         d['email'] = self.email
         d['name'] = name
         d['stage'] = stage
-        d['status'] = self.status if self.status is not None and 'nan' not in self.status else ''
+        d['status'] = self.status if self.status is not None else ''
         return [d]
 
