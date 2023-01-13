@@ -38,7 +38,7 @@ class SqlServer(object):
                 " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
-        query = "CREATE TABLE IF NOT EXISTS FormsAnswers(email TEXT, form_id TEXT, row_index INTEGER NOT NULL, " \
+        query = "CREATE TABLE IF NOT EXISTS FormsAnswers(email TEXT, form_id TEXT, row_index INTEGER NOT NULL, timestamp TEXT NOT NULL, " \
                 "CHECK(row_index >= 1), PRIMARY KEY(email, form_id), " \
                 "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
                 "FOREIGN KEY(form_id) REFERENCES Forms(form_id) ON DELETE CASCADE);"
@@ -301,7 +301,7 @@ class SqlServer(object):
         table = FormsAnswersTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=FormsAnswersTable.get_sql_cols()):
-            query = "INSERT INTO FormsAnswers(email, form_id, row_index) VALUES ({0});".format(row)
+            query = "INSERT INTO FormsAnswers(email, form_id, row_index, timestamp) VALUES ({0});".format(row)
             curser.execute(query)
         self.__conn.commit()
 

@@ -153,7 +153,7 @@ class FormsAnswersTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("email", "str", 'דוא"ל'), ("form_id", "str", "מזהה"), ("row_index", "int", "שורה")]
+        return [("email", "str", 'דוא"ל'), ("form_id", "str", "מזהה"), ("row_index", "int", "שורה"), ("timestamp", "str", "חותמת זמן")]
 
 
 class PrivateQuestionsTable(Table):
