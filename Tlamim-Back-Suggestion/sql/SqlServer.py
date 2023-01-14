@@ -298,50 +298,51 @@ class SqlServer(object):
         self.__conn.commit()
         return path
 
-    def _get_who_answers_to_form(self, form_id) -> pd.DataFrame:
+    @staticmethod
+    def _prepare_form_response(response: list[dict], question_key: str, answer_key: str) -> list:
+        row = []
+        for d in response:
+            question = d[question_key]
+            answer = d[answer_key]
+            row.append((question, answer))
+
+        return row
+
+    def _already_answered(self, form_id: str, email: str) -> pd.DataFrame:
         curser = self.__conn.cursor()
-        query = "SELECT * FROM FormsAnswers WHERE form_id={0};".format(f"\'{form_id}\'")
+        query = "SELECT * FROM FormsAnswers WHERE form_id={0} AND email={1};".format(f"\'{form_id}\'", f"\'{email}\'")
         curser.execute(query)
         columns = [col_name for col_name, _, _ in FormsAnswersTable.get_sql_cols()]
         data = pd.DataFrame(curser.fetchall(), columns=columns)
         self.__conn.commit()
         return data
 
-    def add_form_response(self, form_id: str, responses_file_type: str, timestamp, email, answers: list[dict]):
-        """
-        # the timestamps saved as string so comparing timestamp is not trivial
-        data = Table(path=self._get_form_answers_path(form_id=form_id), table_type=responses_file_type,
-                     hebrew_table=True)
-        questions = [answer['question'] for answer in answers]
-        if len(data.get_cols()) == 0:
-            # this is the first answer in the table so need to set the questions
-            data.table.columns = questions
-        already_answered = self._get_who_answers_to_form(form_id=form_id)
-
-        # the timestamps saved as string so comparing timestamp is not trivial and can't be done on the dataframe column
-        exist_and_replace = already_answered[
-            (already_answered['email'] == email) & already_answered['timestamp'] < timestamp]
+    def add_form_response(self, form_id: str, responses_file_type: str, timestamp: str, email: str, response: list[dict]):
+        data = Table(path=self._get_form_answers_path(form_id=form_id), table_type=responses_file_type, hebrew_table=True)
+        row = SqlServer._prepare_form_response(response=response, question_key='title', answer_key='answer')
         changed = False
-        if len(exist_and_replace.index) == 1:
-            # replace answer
-            row_index = exist_and_replace['row_index'][0] - 1
-            data.table.loc[row_index] = [answer['answer'] for answer in answers]
+        if len(data.get_cols()) == 0:   # set questions if you haven't set them yet
+            data.table.columns = [q for q, _ in row]
             changed = True
+        already_answered = self._already_answered(form_id=form_id, email=email)  # check if already answered and get the relevant sql row
+        if len(already_answered.index) == 0:
+            # no answer found
+            row_index = len(data.table.index)
+            data.table.loc[row_index] = [a for _, a in row]  # add row
+            changed = True
+            self._add_formsAnswers(form_answers=FormAnswers(email=email, form_id=form_id, row_index=row_index+1, timestamp=timestamp))
+            # add answer indicator
         else:
-            exist = already_answered[already_answered['email'] == email]
-            if len(exist.index) == 0:  # new candidate answered
-                row_index = len(data.table.index)
-                data.table.loc[row_index] = [answer['answer'] for answer in answers]
-                form_answers = FormAnswers(email=email, form_id=form_id, row_index=row_index + 1, timestamp=timestamp)
-                self._add_formsAnswers(form_answers=form_answers)
+            # there is old answer
+            row_index = int(already_answered['row_index']) - 1
+            old_timestamp = already_answered['timestamp']
+            if Timestamp(timestamp=timestamp) > Timestamp(timestamp=old_timestamp):
+                # the old answer is older than the current one
+                data.table.loc[row_index] = [a for _, a in row]
                 changed = True
-            # otherwise no change required
         if changed:
+            # if any changes were made save the answers data in the file
             data.save_changes()
-        """
-        # comparing timestamps strings is not trivial and need to be solved
-        raise NotImplemented
-
 
     def _get_formsAnswersTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
