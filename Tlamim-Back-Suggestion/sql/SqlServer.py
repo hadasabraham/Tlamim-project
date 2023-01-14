@@ -286,7 +286,7 @@ class SqlServer(object):
 
     def _add_formsAnswers(self, form_answers: FormAnswers):
         curser = self.__conn.cursor()
-        query = "INSERT INTO FormsAnswers(email, form_id, row_index) VALUES {0};".format(str(form_answers))
+        query = "INSERT INTO FormsAnswers(email, form_id, row_index, timestamp) VALUES {0};".format(str(form_answers))
         curser.execute(query)
         self.__conn.commit()
 
@@ -603,14 +603,27 @@ class SqlServer(object):
             curser = self.__conn.cursor()
             query = "SELECT * FROM Candidates WHERE {0};".format(sql_cond)
             curser.execute(query)
-            sat = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in variables])
-            return Table.dataframe_to_json_list(table=sat)
+            data = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in variables])
+            if len(data.index) == 0:
+                return []
+            else:
+                res = []
+                for _, row in data.iterrows():
+                    candidate = Candidate(email=row['email'],
+                                          first_name=row['first_name'],
+                                          last_name=row['last_name'],
+                                          stage_index=row['stage_index'],
+                                          status=row['status'])
+                    res.append(candidate.to_json_list())
+
+                return sum(res, [])
 
     @staticmethod
     def _parse_condition(condition: str, variables: list[tuple[str, str, str]]) -> str | None:
         condition = condition.strip()
-        conditions = condition.split(",")
+        conditions = [cond for cond in condition.split(",") if cond != '']
         sql_conditions = []
+        print(conditions)
         for cond in conditions:
             key_val = cond.split("=")
             if len(key_val) != 2:
@@ -621,9 +634,15 @@ class SqlServer(object):
             else:
                 key, val, val_type = pack
                 if val_type == 'str':
-                    sql_conditions.append(f"{key}=\'{val}\'")
+                    if val:
+                        sql_conditions.append(f"{key}=\'{val}\'")
+                    else:
+                        sql_conditions.append(f"{key} IS NULL")
                 elif val_type == 'int':
-                    sql_conditions.append(f"{key}={val}")
+                    if val:
+                        sql_conditions.append(f"{key}={val}")
+                    else:
+                        sql_conditions.append(f"{key} IS NULL")
         sql_cond = " AND ".join(sql_conditions)
         return sql_cond.strip()
 
@@ -632,8 +651,14 @@ class SqlServer(object):
         key_val[0] = key_val[0].strip()
         key_val[1] = key_val[1].strip()
         for eng_symbol, var_type, heb_symbol in variables:
+            key, val, t = eng_symbol, None, var_type
             if key_val[0] == heb_symbol:
-                return eng_symbol, key_val[1], var_type
+                val = key_val[1]
             elif key_val[1] == heb_symbol:
-                return eng_symbol, key_val[0], var_type
+                val = key_val[0]
+
+            if val:
+                if val == 'ריק':
+                    val = None
+                return key, val, t
         return None
