@@ -204,7 +204,7 @@ class SqlServer(object):
 
     @staticmethod
     def refresh_privateQuestionsTablePaths(table: PrivateQuestionsTable, hebrew_table=False):
-        header = fr"{os.getcwd()}\data\privateQuestions"
+        header = fr"{os.getcwd()}{os.path.sep}data{os.path.sep}privateQuestions"
         file_path = "table_path" if not hebrew_table else "מיקום קובץ"
         file_type = "file_type" if not hebrew_table else "סוג קובץ"
         columns = table.get_cols()
@@ -213,7 +213,8 @@ class SqlServer(object):
             refreshed_row = []
             for col in columns:
                 if col == file_path:
-                    path = "{0}\\{1}\\{2}".format(header, row[file_type], row[file_path].split('\\')[-1])
+                    file_name = row[file_path].split(f'{os.path.sep}')[-1]
+                    path = fr"{header}{os.path.sep}{row[file_type]}{os.path.sep}{file_name}"
                     refreshed_row.append(path)
                 else:
                     refreshed_row.append(row[col])
@@ -258,7 +259,7 @@ class SqlServer(object):
 
     @staticmethod
     def refresh_formsTablePaths(table: FormsTable, hebrew_table=False):
-        header = fr"{os.getcwd()}\data\formsAnswers"
+        header = fr"{os.getcwd()}{os.path.sep}data{os.path.sep}formsAnswers"
         file_path = "responses_file_path" if not hebrew_table else "מיקום קובץ תשובות"
         file_type = "file_type" if not hebrew_table else "סוג קובץ"
         columns = table.get_cols()
@@ -267,7 +268,8 @@ class SqlServer(object):
             refreshed_row = []
             for col in columns:
                 if col == file_path:
-                    path = "{0}\\{1}\\{2}".format(header, row[file_type], row[file_path].split('\\')[-1])
+                    file_name = row[file_path].split(f'{os.path.sep}')[-1]
+                    path = fr"{header}{os.path.sep}{row[file_type]}{os.path.sep}{file_name}"
                     refreshed_row.append(path)
                 else:
                     refreshed_row.append(row[col])
@@ -490,6 +492,8 @@ class SqlServer(object):
         curser.execute(query)
         candidate = pd.DataFrame(curser.fetchall(),
                                  columns=["email", "first_name", "last_name", "stage_index", "status"])
+        if len(candidate.index) == 0:
+            return []
         stage_index = candidate['stage_index'][0]
         first_name = candidate['first_name'][0]
         last_name = candidate['last_name'][0]
@@ -568,7 +572,7 @@ class SqlServer(object):
 
     @staticmethod
     def refresh_generalQuestionsTablePaths(table: GeneralQuestionsTable, hebrew_table=False):
-        header = fr"{os.getcwd()}\data\generalQuestions"
+        header = fr"{os.getcwd()}{os.path.sep}data{os.path.sep}generalQuestions"
         file_path = "file_path" if not hebrew_table else "מיקום קובץ"
         file_type = "file_type" if not hebrew_table else "סוג קובץ"
         columns = table.get_cols()
@@ -577,7 +581,8 @@ class SqlServer(object):
             refreshed_row = []
             for col in columns:
                 if col == file_path:
-                    path = "{0}\\{1}\\{2}".format(header, row[file_type], row[file_path].split('\\')[-1])
+                    file_name = row[file_path].split(f'{os.path.sep}')[-1]
+                    path = fr"{header}{os.path.sep}{row[file_type]}{os.path.sep}{file_name}"
                     refreshed_row.append(path)
                 else:
                     refreshed_row.append(row[col])

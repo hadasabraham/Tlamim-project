@@ -9,12 +9,12 @@ class Form(object):
         self.form_id = form_id.strip()
         self.form_link = form_link.strip()
         self.stage_index = stage_index
-        header = os.getcwd().split("\\")[:-1]
-        path = "\\".join(header) + f"\\sql\\data\\formsAnswers\\{file_type.strip()}"
+        header = os.getcwd().split(f"{os.path.sep}")[:-1]
+        path = f"{os.path.sep}".join(header) + f"{os.path.sep}sql{os.path.sep}data{os.path.sep}formsAnswers{os.path.sep}{file_type.strip()}"
 
         if responses_file_path:
-            file_name = responses_file_path.strip().split("\\")[-1]
-            path = fr"{path}\{file_name}"
+            file_name = responses_file_path.strip().split(f"{os.path.sep}")[-1]
+            path = fr"{path}{os.path.sep}{file_name}"
             self.responses_file_path = path
             if file_type.strip() == 'xlsx':
                 data = pd.read_excel(responses_file_path.strip())
@@ -27,11 +27,11 @@ class Form(object):
             # if responses save path wasn't provided use the form id and save in the appropriate
             # folder according to type of file (i.e. xlsx\csv folder)
             if file_type.strip() == 'xlsx':
-                self.responses_file_path = fr"{path}\{form_id}.xlsx"
+                self.responses_file_path = fr"{path}{os.path.sep}{form_id}.xlsx"
                 if not os.path.exists(self.responses_file_path):
                     pd.DataFrame().to_excel(self.responses_file_path, index=False)
             else:
-                self.responses_file_path = fr"{path}\{form_id}.csv"
+                self.responses_file_path = fr"{path}{os.path.sep}{form_id}.csv"
                 if not os.path.exists(self.responses_file_path):
                     pd.DataFrame().ro_csv(self.responses_file_path, index=False)
 

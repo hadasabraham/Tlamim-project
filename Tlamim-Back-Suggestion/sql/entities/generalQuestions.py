@@ -13,9 +13,9 @@ class GeneralQuestions(object):
         self.file_path = file_path.strip()
         self.file_type = file_type.strip()
 
-        file_name = file_path.split("\\")[-1]
-        header = fr"{os.getcwd()}\data\generalQuestions"
-        path = fr"{header}\{file_type}\{file_name}"
+        file_name = file_path.split(f"{os.path.sep}")[-1]
+        header = fr"{os.getcwd()}{os.path.sep}data{os.path.sep}generalQuestions"
+        path = fr"{header}{os.path.sep}{file_type}{os.path.sep}{file_name}"
         if not os.path.exists(path):
             if file_type == "xlsx":
                 pd.read_excel(file_path).to_excel(path, index=False)
