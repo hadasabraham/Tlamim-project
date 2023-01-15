@@ -7,6 +7,7 @@ class BackendServer(object):
 
     def __init__(self):
         self.__sql_server = SqlServer()
+        self.__sql_server.create_tables()
 
     def get_candidate_summarized(self, email: str) -> list[dict]:
         return self.__sql_server.get_candidate_summarized(email=email)

@@ -34,7 +34,6 @@ def test1():
     grades_table_path = fr"{base_path}\gradesTable.xlsx"
     server.load_gradesTable(path=grades_table_path, file_type="xlsx", hebrew_table=True)
 
-
     candidate0 = server.get_candidate_entire_info(email="candidate0@gmail.com")
     candidate1 = server.get_candidate_entire_info(email="candidate1@gmail.com")
     candidate2 = server.get_candidate_entire_info(email="candidate2@gmail.com")
@@ -48,7 +47,7 @@ def test1():
     print("Candidate2")
     print(server.get_candidate_summarized(email="candidate2@gmail.com"))
     print(candidate2, end="\r\n\r\n")
-    
+
     server.clear_tables()
 
 

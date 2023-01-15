@@ -330,8 +330,8 @@ class SqlServer(object):
             row_index = len(data.table.index)
             data.table.loc[row_index] = [a for _, a in row]  # add row
             changed = True
-            self._add_formsAnswers(form_answers=FormAnswers(email=email, form_id=form_id, row_index=row_index+1, timestamp=timestamp))
             # add answer indicator
+            self._add_formsAnswers(form_answers=FormAnswers(email=email, form_id=form_id, row_index=row_index+1, timestamp=timestamp))
         else:
             # there is old answer
             row_index = int(already_answered['row_index']) - 1
@@ -464,7 +464,7 @@ class SqlServer(object):
         curser = self.__conn.cursor()
         grades = []
         grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes FROM Candidates AS C, Grades AS G " \
-                       "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index".format(f"\'{email}\'")
+                       "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index ORDER BY G.stage_index DESC;".format(f"\'{email}\'")
 
         curser.execute(grades_query)
         grades_table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "grade", "passed", "notes"])
@@ -501,7 +501,7 @@ class SqlServer(object):
         stages_table = self.get_stagesTable()
         stages = []
         answers = candidate.to_json_list()[0]
-        for index in range(stage_index + 1):
+        for index in range(stage_index, -1, -1):
             answer = dict()
             answer['stage_index'] = stages_table['stage_index'][index]
             answer['stage_name'] = stages_table['stage_name'][index]
@@ -614,16 +614,15 @@ class SqlServer(object):
                                           last_name=row['last_name'],
                                           stage_index=row['stage_index'],
                                           status=row['status'])
-                    res.append(candidate.to_json_list())
+                    res.append(candidate.to_json_list()[0])
 
-                return sum(res, [])
+                return res
 
     @staticmethod
     def _parse_condition(condition: str, variables: list[tuple[str, str, str]]) -> str | None:
         condition = condition.strip()
         conditions = [cond for cond in condition.split(",") if cond != '']
         sql_conditions = []
-        print(conditions)
         for cond in conditions:
             key_val = cond.split("=")
             if len(key_val) != 2:
@@ -658,7 +657,7 @@ class SqlServer(object):
                 val = key_val[0]
 
             if val:
-                if val == 'ריק':
+                if val == "\'ריק\'":
                     val = None
                 return key, val, t
         return None
