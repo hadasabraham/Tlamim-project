@@ -4,6 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from BackendServer import BackendServer
+from pathParameters.parameters import *
 
 serverApp = FastAPI()
 backendServer = BackendServer()
@@ -18,25 +19,26 @@ serverApp.add_middleware(
 )
 
 
-@serverApp.get("/candidates/query/", response_class=JSONResponse)
-async def root(request: Request):
-    response = JSONResponse([], headers={})
-    return response
+@serverApp.post("/refresh_forms_answers")
+async def refresh(request: Request):
+    backendServer.refresh_forms_answers()
 
 
-@serverApp.get("/candidates/query/{condition}", response_class=JSONResponse)
-async def search_candidates(request: Request, condition: str):
-    return JSONResponse(backendServer.search_candidates(condition=condition), headers={})
+@serverApp.get("/candidates/search", response_class=JSONResponse)
+async def search_candidates(request: Request, query: ConditionParameter):
+    if not query.condition or query.condition == '':
+        JSONResponse([], headers={})
+    return JSONResponse(backendServer.search_candidates(condition=query.condition), headers={})
 
 
-@serverApp.get("/candidate/entire_info/{email}", response_class=JSONResponse)
-async def get_candidate_entire_info(request: Request, email: str):
-    return JSONResponse(backendServer.get_candidate_entire_info(email=email), headers={})
+@serverApp.get("/candidate/entire_info", response_class=JSONResponse)
+async def get_candidate_entire_info(request: Request, query: EmailParameter):
+    return JSONResponse(backendServer.get_candidate_entire_info(email=query.email), headers={})
 
 
-@serverApp.get("/candidate/entire_info/{email}", response_class=JSONResponse)
-async def get_candidate_summarized(request: Request, email: str):
-    return JSONResponse(backendServer.get_candidate_summarized(email=email), headers={})
+@serverApp.get("/candidate/summarized", response_class=JSONResponse)
+async def get_candidate_summarized(request: Request, query: EmailParameter):
+    return JSONResponse(backendServer.get_candidate_summarized(email=query.email), headers={})
 
 
 if __name__ == "__main__":

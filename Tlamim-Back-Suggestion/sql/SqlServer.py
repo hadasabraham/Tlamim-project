@@ -238,6 +238,16 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
+
+    def get_forms_required_info_to_adding_answer(self):
+        curser = self.__conn.cursor()
+        query = "SELECT form_id, file_type FROM Forms;"
+        curser.execute(query)
+        columns = ['form_id', 'file_type']
+        data = pd.DataFrame(curser.fetchall(), columns=columns)
+        self.__conn.commit()
+        return data
+
     def _get_formsTable(self) -> pd.DataFrame:
         curser = self.__conn.cursor()
         query = "SELECT * FROM Forms;"
