@@ -5,13 +5,4 @@
     <orderEntry type="jdk" jdkName="Python 3.10 (pro)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
-  <component name="PyNamespacePackagesService">
-    <option name="namespacePackageFolders">
-      <list>
-        <option value="$MODULE_DIR$/sql" />
-        <option value="$MODULE_DIR$/forms" />
-        <option value="$MODULE_DIR$/email" />
-      </list>
-    </option>
-  </component>
 </module>
