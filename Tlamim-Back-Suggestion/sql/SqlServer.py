@@ -19,6 +19,40 @@ class SqlServer(object):
         self.__conn = sql.connect(database=database)
 
     def create_tables(self):
+        """
+        Crate all the tables if not exists.
+        Stages(stage_index, stage_name).
+        Stores the general properties of each stage.
+
+        Candidate(email, first_name, last_name, stage_index, status).
+        Stores the summarizes information presented on the main page for each candidate.
+
+        GeneralQuestions(stage_index, file_path, file_type).
+        Stores a xlsx/csv file full path of a table with general questions as columns and answers as rows.
+        The questions are associated with a certain stage by stage_index and each stage can have at most one file (one entry in the sql table).
+
+        Forms(form_id, form_link, stage_index, responses_file_path, file_type).
+        Stores the general information about a form questionnaire associated with some stage.
+        The responses_file_path and file_type represent the location for saving the answers for the form.
+        The path is assumed to be a full path.
+        There can be as many forms as the user like to each stage.
+
+        FormsAnswers(email, form_id, row_index, timestamp).
+        Stores who answered on each form, when the last answer we parsed was created and in which row in the answers file associated
+        with the form, we will find the full answers for the form.
+
+
+        PrivateQuestions(email, stage_index, table_path, file_type).
+        Stores a file with questions as column and one row as answers.
+        This files allow to add specific questions and answers given to one candidate at a specific stage.
+        Can have at most one entry for each candidate at some stage.
+
+        Grades(email, stage_index, grade, passed, notes).
+        Allow the user to grade candidates stage performance and add text notes to the entire stage.
+        Here we save whether the candidate passed a specific stage.
+
+        :return:
+        """
         curser = self.__conn.cursor()
 
         query = "CREATE TABLE IF NOT EXISTS Stages(stage_index INTEGER PRIMARY KEY, stage_name TEXT NOT NULL, CHECK(stage_index >= 0));"
@@ -61,6 +95,11 @@ class SqlServer(object):
         self.__conn.commit()
 
     def drop_tables(self):
+        """
+        Drop all tables from the database if exists.
+        Do not delete the form responses files, general questions files or private questions files.
+        :return:
+        """
         curser = self.__conn.cursor()
 
         query = "DROP TABLE IF EXISTS Grades;"
@@ -87,6 +126,10 @@ class SqlServer(object):
         self.__conn.commit()
 
     def clear_tables(self):
+        """
+        Clear all the tables without clearing/deleting form responses files, general questions files or private questions files.
+        :return:
+        """
         curser = self.__conn.cursor()
 
         query = "DELETE FROM Grades;"
@@ -113,12 +156,20 @@ class SqlServer(object):
         self.__conn.commit()
 
     def add_stage(self, stage: Stage):
+        """
+        Adding stage to the stages table
+        :param stage: stage object
+        :return:
+        """
         curser = self.__conn.cursor()
         query = "INSERT INTO Stages(stage_index, stage_name) VALUES {0};".format(str(stage))
         curser.execute(query)
         self.__conn.commit()
 
     def get_stagesTable(self) -> pd.DataFrame:
+        """
+        :return: the stages table with the columns 'stage_index', 'stage_name' sorted by 'stage_index' in ascending order.
+        """
         curser = self.__conn.cursor()
         query = "SELECT * FROM Stages ORDER BY stage_index ASC;"
         curser.execute(query)
@@ -128,6 +179,14 @@ class SqlServer(object):
         return data
 
     def load_stagesTable(self, path: str, file_type: str, hebrew_table: bool):
+        """
+        Loads stages table represent the general information on the stages in the selection process.
+        The stages table structure detailed in the StagesTable object in table.py
+        :param path: a path of table file
+        :param file_type: the stages file type
+        :param hebrew_table: is the columns in hebrew or english
+        :return:
+        """
         table = StagesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=StagesTable.get_sql_cols()):
@@ -136,6 +195,14 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_stagesTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
+        """
+        Saves the information from get_stagesTable to a file
+        :param path: where to save the table
+        :param file_type: xlsx/csv
+        :param index: save indexes  (generally use no)
+        :param hebrew_table: columns names should be in hebrew
+        :return:
+        """
         stages_table = self.get_stagesTable()
         if hebrew_table:
             stages_table.columns = [heb for _, _, heb in StagesTable.get_sql_cols()]
@@ -146,12 +213,20 @@ class SqlServer(object):
             stages_table.to_excel(path, index=index)
 
     def add_grade(self, grade: Grade):
+        """
+        Adding grade to the database
+        :param grade: grade object
+        :return:
+        """
         curser = self.__conn.cursor()
         query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES {0};".format(str(grade))
         curser.execute(query)
         self.__conn.commit()
 
     def get_gradesTable(self) -> pd.DataFrame:
+        """
+        :return: grades table with columns 'email', 'stage_index', 'grade', 'passed' and 'notes'.
+        """
         curser = self.__conn.cursor()
         query = "SELECT * FROM Grades;"
         curser.execute(query)
@@ -161,6 +236,13 @@ class SqlServer(object):
         return data
 
     def load_gradesTable(self, path: str, file_type: str, hebrew_table: bool = False):
+        """
+        Loads grades table for the selection process.
+        The grades table structure detailed in the GradesTable object in table.py
+        :param path: a path of table file
+        :param file_type: the stages file type
+        :param hebrew_table: is the columns in hebrew or english
+        """
         table = GradesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=GradesTable.get_sql_cols()):
@@ -169,6 +251,13 @@ class SqlServer(object):
         self.__conn.commit()
 
     def export_gradesTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
+        """
+        Saves the information from get_gradesTable to a file
+        :param path: where to save the table
+        :param file_type: xlsx/csv
+        :param index: save indexes  (generally use no)
+        :param hebrew_table: columns names should be in hebrew
+        """
         grades_table = self.get_gradesTable()
         if hebrew_table:
             grades_table.columns = [heb for _, _, heb in GradesTable.get_sql_cols()]
@@ -178,6 +267,11 @@ class SqlServer(object):
             grades_table.to_excel(path, index=index)
 
     def add_privateQuestions(self, private_questions: PrivateQuestions):
+        """
+        Adds private questions file
+        :param private_questions: private questions object (creates copy of the file to our data/privateQuestions directory)
+        :return:
+        """
         curser = self.__conn.cursor()
         query = "INSERT INTO PrivateQuestions(email, stage_index, table_path, file_type) VALUES {0};".format(
             str(private_questions))
@@ -185,6 +279,9 @@ class SqlServer(object):
         self.__conn.commit()
 
     def _get_privateQuestionsTable(self) -> pd.DataFrame:
+        """
+        :return:  private questions table with columns 'email', 'stage_index', 'table_path' and 'file_type'
+        """
         curser = self.__conn.cursor()
         query = "SELECT * FROM PrivateQuestions;"
         curser.execute(query)
@@ -194,6 +291,15 @@ class SqlServer(object):
         return data
 
     def load_privateQuestionsTable(self, path: str, file_type: str, hebrew_table: bool = False):
+        """
+        Loads private questions table for the selection process.
+        The private questions  table structure detailed in the PrivateQuestionsTable object in table.py .
+        Refresh the 'table_path' because the full path can change but the relative path in the data directory cannot
+        :param path: a path of table file
+        :param file_type: the stages file type
+        :param hebrew_table: is the columns in hebrew or english
+        :return:
+        """
         table = PrivateQuestionsTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         SqlServer.refresh_privateQuestionsTablePaths(table=table, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
@@ -204,6 +310,12 @@ class SqlServer(object):
 
     @staticmethod
     def refresh_privateQuestionsTablePaths(table: PrivateQuestionsTable, hebrew_table=False):
+        """
+        Refresh all 'table_path' for all the private questions table
+        :param table: a PrivateQuestionsTable object
+        :param hebrew_table: is the columns in hebrew or english
+        :return:
+        """
         header = fr"{os.getcwd()}{os.path.sep}data{os.path.sep}privateQuestions"
         file_path = "table_path" if not hebrew_table else "מיקום קובץ"
         file_type = "file_type" if not hebrew_table else "סוג קובץ"
@@ -223,6 +335,14 @@ class SqlServer(object):
         table.table = refreshed_table
 
     def export_privateQuestionsTable(self, path: str, file_type: str, index: bool, hebrew_table: bool = False):
+        """
+        Saves the information from _get_privateQuestionsTable to a file
+        :param path: where to save the table
+        :param file_type: xlsx/csv
+        :param index: save indexes  (generally use no)
+        :param hebrew_table: columns names should be in hebrew
+        :return:
+        """
         private_questions_table = self._get_privateQuestionsTable()
         if hebrew_table:
             private_questions_table.columns = [heb for _, _, heb in PrivateQuestionsTable.get_sql_cols()]
@@ -636,6 +756,8 @@ class SqlServer(object):
     @staticmethod
     def _parse_condition(condition: str, variables: list[tuple[str, str, str]]) -> str | None:
         condition = condition.strip()
+        if condition == "הכול":
+            return "TRUE"
         conditions = [cond for cond in condition.split(",") if cond != '']
         sql_conditions = []
         for cond in conditions:
@@ -649,7 +771,7 @@ class SqlServer(object):
                 key, val, val_type = pack
                 if val_type == 'str':
                     if val:
-                        sql_conditions.append(f"{key}=\'{val}\'")
+                        sql_conditions.append(f"{key} LIKE \'%{val}%\'")
                     else:
                         sql_conditions.append(f"{key} IS NULL")
                 elif val_type == 'int':
