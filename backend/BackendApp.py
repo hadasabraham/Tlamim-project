@@ -4,7 +4,6 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from BackendServer import BackendServer
-from pathParameters.parameters import *
 
 serverApp = FastAPI()
 backendServer = BackendServer()
@@ -24,21 +23,21 @@ async def refresh(request: Request):
     backendServer.refresh_forms_answers()
 
 
-@serverApp.get("/candidates/search", response_class=JSONResponse)
-async def search_candidates(request: Request, query: ConditionParameter):
-    if not query.condition or query.condition == '':
+@serverApp.get("/candidates/search/{condition}", response_class=JSONResponse)
+async def search_candidates(request: Request, condition: str):
+    if not condition or condition == '':
         JSONResponse([], headers={})
-    return JSONResponse(backendServer.search_candidates(condition=query.condition), headers={})
+    return JSONResponse(backendServer.search_candidates(condition=condition), headers={})
 
 
-@serverApp.get("/candidate/entire_info", response_class=JSONResponse)
-async def get_candidate_entire_info(request: Request, query: EmailParameter):
-    return JSONResponse(backendServer.get_candidate_entire_info(email=query.email), headers={})
+@serverApp.get("/candidate/entire_info/{email}", response_class=JSONResponse)
+async def get_candidate_entire_info(request: Request, email: str):
+    return JSONResponse(backendServer.get_candidate_entire_info(email=email), headers={})
 
 
-@serverApp.get("/candidate/summarized", response_class=JSONResponse)
-async def get_candidate_summarized(request: Request, query: EmailParameter):
-    return JSONResponse(backendServer.get_candidate_summarized(email=query.email), headers={})
+@serverApp.get("/candidate/summarized/{email}", response_class=JSONResponse)
+async def get_candidate_summarized(request: Request, email: str):
+    return JSONResponse(backendServer.get_candidate_summarized(email=email), headers={})
 
 
 if __name__ == "__main__":

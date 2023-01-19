@@ -1,4 +1,5 @@
 import os
+import shutil
 import sqlite3 as sql
 
 import pandas as pd
@@ -97,26 +98,38 @@ class SqlServer(object):
 
         SqlServer.prepare_inner_directories()
 
-
     @staticmethod
     def prepare_inner_directories():
 
         base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
         directories = [fr'{os.path.sep}formsAnswers',
-                       fr'{os.path.sep}generalQuestions', fr'{os.path.sep}privateQuestions',
-                       fr'{os.path.sep}tables']
+                       fr'{os.path.sep}generalQuestions', fr'{os.path.sep}privateQuestions']
         file_types = ['xlsx', 'csv']
 
         if not os.path.exists(base_path):
-            os.makedirs(base_path)
+            os.makedirs(base_path, mode=0o777)
 
         for directory in directories:
             for f_type in file_types:
                 path = f'{base_path}{directory}{os.path.sep}{f_type}'
                 if not os.path.exists(path):
-                    os.makedirs(path)
+                    os.makedirs(path, mode=0o777)
 
+        if not os.path.exists(fr'{base_path}{os.path.sep}snapshots'):
+            os.makedirs(fr'{base_path}{os.path.sep}snapshots', mode=0o777)
 
+    @staticmethod
+    def clear_inner_directories():
+        base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+        directories = [fr'{os.path.sep}formsAnswers',
+                       fr'{os.path.sep}generalQuestions', fr'{os.path.sep}privateQuestions']
+        file_types = ['xlsx', 'csv']
+
+        for directory in directories:
+            for f_type in file_types:
+                path = f'{base_path}{directory}{os.path.sep}{f_type}'
+                if os.path.exists(path):
+                    shutil.rmtree(path)
 
     def drop_tables(self):
         """
@@ -149,6 +162,8 @@ class SqlServer(object):
 
         self.__conn.commit()
 
+        SqlServer.clear_inner_directories()
+
     def clear_tables(self):
         """
         Clear all the tables without clearing/deleting form responses files, general questions files or private questions files.
@@ -178,6 +193,7 @@ class SqlServer(object):
         curser.execute(query)
 
         self.__conn.commit()
+        SqlServer.clear_inner_directories()
 
     def add_stage(self, stage: Stage):
         """
@@ -236,7 +252,7 @@ class SqlServer(object):
         elif file_type == 'xlsx':
             stages_table.to_excel(path, index=index)
 
-    def add_grade(self, grade: Grade):
+    def _add_grade(self, grade: Grade):
         """
         Adding grade to the database
         :param grade: grade object
@@ -246,6 +262,58 @@ class SqlServer(object):
         query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES {0};".format(str(grade))
         curser.execute(query)
         self.__conn.commit()
+
+    def update_grade(self, grade: Grade):
+        curser = self.__conn.cursor()
+        query = "SELECT stage_index FROM Candidates WHERE email={0}".format(f"\'{grade.email}\'")
+        curser.execute(query)
+        valid_stage_index = pd.DataFrame(curser.fetchall(), columns=["stage_index"])
+        if len(valid_stage_index.index) == 0:
+            return
+        valid_stage_index = valid_stage_index["stage_index"][0] >= grade.stage_index
+        if valid_stage_index:
+            query = "SELECT * FROM Grades WHERE stage_index={0} AND email={1}".format(f"{grade.stage_index}",
+                                                                                      f"\'{grade.email}\'")
+            curser.execute(query)
+            exists = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in GradesTable.get_sql_cols()])
+            if len(exists.index) == 0:
+                # no grade ever inserted. assume that the grade has all its necessary entries
+                self._add_grade(grade=grade)
+            else:
+                # updating old grade. Assume that each one of the grade, passed, notes can be updated.
+                # if the parameter is None assume no update required
+                # the notes are accumulative
+                # passed stages can be None, True, False. valid updates are None -> False -> True, or, None -> True -> False
+                # automatic email will be sent upon request to all the candidates who passed the stage
+                current_grade = Grade(email=exists["email"][0],
+                                      stage_index=exists["stage_index"][0],
+                                      grade=exists["grade"][0],
+                                      passed=exists["passed"][0],
+                                      notes=exists["notes"][0])
+
+                passed_changed = current_grade.update_passed(passed=grade.passed)
+                score_changed = current_grade.update_score(score=grade.grade)
+                notes_changed = current_grade.add_notes(notes=grade.notes)
+                if passed_changed:
+                    query = "UPDATE Grades SET passed={0} WHERE stage_index={1} AND email={2}".format(
+                        f"{current_grade.passed}",
+                        f"{current_grade.stage_index}",
+                        f"\'{current_grade.email}\'")
+                    curser.execute(query)
+                if score_changed:
+                    query = "UPDATE Grades SET grade={0} WHERE stage_index={1} AND email={2}".format(
+                        f"{current_grade.grade}",
+                        f"{current_grade.stage_index}",
+                        f"\'{current_grade.email}\'")
+                    curser.execute(query)
+                if notes_changed:
+                    query = "UPDATE Grades SET notes={0} WHERE stage_index={1} AND email={2}".format(
+                        f"\'{current_grade.notes}\'",
+                        f"{current_grade.stage_index}",
+                        f"\'{current_grade.email}\'")
+                    curser.execute(query)
+                self.__conn.commit()
+
 
     def get_gradesTable(self) -> pd.DataFrame:
         """
@@ -382,7 +450,6 @@ class SqlServer(object):
         curser.execute(query)
         self.__conn.commit()
 
-
     def get_forms_required_info_to_adding_answer(self):
         curser = self.__conn.cursor()
         query = "SELECT form_id, file_type FROM Forms;"
@@ -414,7 +481,6 @@ class SqlServer(object):
     @staticmethod
     def refresh_formsTablePaths(table: FormsTable, hebrew_table=False):
         header = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}formsAnswers"
-        print(header)
         file_path = "responses_file_path" if not hebrew_table else "מיקום קובץ תשובות"
         file_type = "file_type" if not hebrew_table else "סוג קובץ"
         columns = table.get_cols()
@@ -474,21 +540,25 @@ class SqlServer(object):
         self.__conn.commit()
         return data
 
-    def add_form_response(self, form_id: str, responses_file_type: str, timestamp: str, email: str, response: list[dict]):
-        data = Table(path=self._get_form_answers_path(form_id=form_id), table_type=responses_file_type, hebrew_table=True)
+    def add_form_response(self, form_id: str, responses_file_type: str, timestamp: str, email: str,
+                          response: list[dict]):
+        data = Table(path=self._get_form_answers_path(form_id=form_id), table_type=responses_file_type,
+                     hebrew_table=True)
         row = SqlServer._prepare_form_response(response=response, question_key='title', answer_key='answer')
         changed = False
-        if len(data.get_cols()) == 0:   # set questions if you haven't set them yet
+        if len(data.get_cols()) == 0:  # set questions if you haven't set them yet
             data.delete_and_rename_columns(columns=[q for q, _ in row])
             changed = True
-        already_answered = self._already_answered(form_id=form_id, email=email)  # check if already answered and get the relevant sql row
+        already_answered = self._already_answered(form_id=form_id,
+                                                  email=email)  # check if already answered and get the relevant sql row
         if len(already_answered.index) == 0:
             # no answer found
             row_index = len(data.table.index)
             data.table.loc[row_index] = [a for _, a in row]  # add row
             changed = True
             # add answer indicator
-            self._add_formsAnswers(form_answers=FormAnswers(email=email, form_id=form_id, row_index=row_index+1, timestamp=timestamp))
+            self._add_formsAnswers(
+                form_answers=FormAnswers(email=email, form_id=form_id, row_index=row_index + 1, timestamp=timestamp))
         else:
             # there is old answer
             row_index = int(already_answered['row_index'][0]) - 1
@@ -532,6 +602,32 @@ class SqlServer(object):
         curser = self.__conn.cursor()
         query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status) VALUES {0};".format(
             str(candidate))
+        curser.execute(query)
+        self.__conn.commit()
+
+    def update_candidate_status(self, email: str, status: str):
+        curser = self.__conn.cursor()
+        query = "UPDATE Candidates SET status={0} WHERE email={1}".format(f"\'{status}\'", f"\'{email}\'")
+        curser.execute(query)
+        self.__conn.commit()
+
+    def advance_candidate(self, email: str):
+        # when closing a stage all the candidate who passed the stage will advance to the next stage.
+        # assume that closing the final stage isn't possible and all those in the final stage with grade.passed = True accepted to the program
+        curser = self.__conn.cursor()
+        query = "SELECT stage_index FROM Candidates WHERE email={0}".format(f"\'{email}\'")
+        curser.execute(query)
+        stage_index = pd.DataFrame(curser.fetchall(), columns=["stage_index"])
+        if len(stage_index.index) == 0:
+            return  # candidate not found
+        stage_index = stage_index["stage_index"][0]
+        query = "SELECT stage_index FROM Stages WHERE stage_index={0}".format(f"{stage_index}")
+        curser.execute(query)
+        exists = pd.DataFrame(curser.fetchall(), columns=["stage_index"])
+        if len(exists.index) == 0:
+            return  # candidate in the last stage can't progress
+
+        query = "UPDATE Candidates SET stage_index={0} WHERE email={1}".format(f"{stage_index}", f"\'{email}\'")
         curser.execute(query)
         self.__conn.commit()
 
@@ -585,7 +681,8 @@ class SqlServer(object):
         curser = self.__conn.cursor()
         general = []
         general_questions = "SELECT G.stage_index, G.file_path, G.file_type FROM Candidates AS C, GeneralQuestions AS G " \
-                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(f"\'{email}\'")
+                            "WHERE C.stage_index >= G.stage_index AND email={0} ORDER BY C.stage_index DESC;".format(
+            f"\'{email}\'")
         curser.execute(general_questions)
         general_questions = pd.DataFrame(curser.fetchall(), columns=["stage_index", "file_path", "file_type"])
         for _, row in general_questions.iterrows():
@@ -622,7 +719,8 @@ class SqlServer(object):
         curser = self.__conn.cursor()
         grades = []
         grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes FROM Candidates AS C, Grades AS G " \
-                       "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index ORDER BY G.stage_index DESC;".format(f"\'{email}\'")
+                       "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index ORDER BY G.stage_index DESC;".format(
+            f"\'{email}\'")
 
         curser.execute(grades_query)
         grades_table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "grade", "passed", "notes"])
@@ -824,3 +922,57 @@ class SqlServer(object):
                     val = None
                 return key, val, t
         return None
+
+    def save_snapshot(self, snapshot_name):
+        base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
+        if not os.path.exists(base_path):
+            os.makedirs(base_path, mode=0o777)
+        print(base_path)
+
+        stages_path = fr"{base_path}{os.path.sep}stagesTable.xlsx"
+        self.export_stagesTable(path=stages_path, file_type="xlsx", index=False, hebrew_table=True)
+
+        candidates_path = fr"{base_path}{os.path.sep}candidatesTable.xlsx"
+        self.export_candidatesTable(path=candidates_path, file_type="xlsx", index=False, hebrew_table=True)
+
+        forms_path = fr"{base_path}{os.path.sep}formsTable.xlsx"
+        self.export_formsTable(path=forms_path, file_type="xlsx", index=False, hebrew_table=True)
+
+        forms_answers_path = fr"{base_path}{os.path.sep}formsAnswersTable.xlsx"
+        self.export_formsAnswersTable(path=forms_answers_path, file_type="xlsx", index=False, hebrew_table=True)
+
+        general_questions_path = fr"{base_path}{os.path.sep}generalQuestionsTable.xlsx"
+        self.export_generalQuestionsTable(path=general_questions_path, file_type="xlsx", index=False, hebrew_table=True)
+
+        private_questions_path = fr"{base_path}{os.path.sep}privateQuestionsTable.xlsx"
+        self.export_privateQuestionsTable(path=private_questions_path, file_type="xlsx", index=False, hebrew_table=True)
+
+        grades_path = fr"{base_path}{os.path.sep}gradesTable.xlsx"
+        self.export_gradesTable(path=grades_path, file_type="xlsx", index=False, hebrew_table=True)
+
+    def load_snapshot(self, snapshot_name):
+        base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
+        if not os.path.exists(base_path):
+            return
+        print(base_path)
+
+        stages_path = fr"{base_path}{os.path.sep}stagesTable.xlsx"
+        self.load_stagesTable(path=stages_path, file_type="xlsx", hebrew_table=True)
+
+        candidates_path = fr"{base_path}{os.path.sep}candidatesTable.xlsx"
+        self.load_candidatesTable(path=candidates_path, file_type="xlsx", hebrew_table=True)
+
+        forms_path = fr"{base_path}{os.path.sep}formsTable.xlsx"
+        self.load_formsTable(path=forms_path, file_type="xlsx", hebrew_table=True)
+
+        forms_answers_path = fr"{base_path}{os.path.sep}formsAnswersTable.xlsx"
+        self.load_formsAnswersTable(path=forms_answers_path, file_type="xlsx", hebrew_table=True)
+
+        general_questions_path = fr"{base_path}{os.path.sep}generalQuestionsTable.xlsx"
+        self.load_generalQuestionsTable(path=general_questions_path, file_type="xlsx", hebrew_table=True)
+
+        private_questions_path = fr"{base_path}{os.path.sep}privateQuestionsTable.xlsx"
+        self.load_privateQuestionsTable(path=private_questions_path, file_type="xlsx", hebrew_table=True)
+
+        grades_path = fr"{base_path}{os.path.sep}gradesTable.xlsx"
+        self.load_gradesTable(path=grades_path, file_type="xlsx", hebrew_table=True)

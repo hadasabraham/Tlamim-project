@@ -25,12 +25,14 @@ def test(serve):
         serve.get_sql_server().add_form(form=f)
 
 
+
     serve.refresh_forms_answers()
     print(serve.get_candidate_entire_info(email="candidate0@gmail.com"))
-
+    serve.get_sql_server().save_snapshot(snapshot_name="snap0")
 
 
 if __name__ == '__main__':
     server = BackendServer()
-
     test(serve=server)
+
+
