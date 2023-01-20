@@ -11,10 +11,12 @@ class Candidate(object):
         self.status = status.strip() if status is not None and status.strip().lower() != 'nan' and status.strip().lower() != 'null' else None
 
     def __str__(self):
+        first = self.first_name.replace('\'', '\'\'')
+        last = self.last_name.replace('\'', '\'\'')
         if self.status:
-            res = f"(\'{self.email}\', \'{self.first_name}\', \'{self.last_name}\', {self.stage_index}, \'{self.status}\')"
+            res = f"(\'{self.email}\', \'{first}\', \'{last}\', {self.stage_index}, \'{self.status}\')"
         else:
-            res = f"(\'{self.email}\', \'{self.first_name}\', \'{self.last_name}\', {self.stage_index}, NULL)"
+            res = f"(\'{self.email}\', \'{first}\', \'{last}\', {self.stage_index}, NULL)"
         return res
 
     def to_json_list(self) -> list[dict]:

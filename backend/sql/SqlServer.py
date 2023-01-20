@@ -278,6 +278,8 @@ class SqlServer(object):
             exists = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in GradesTable.get_sql_cols()])
             if len(exists.index) == 0:
                 # no grade ever inserted. assume that the grade has all its necessary entries
+                if grade.grade is None:
+                    return 
                 self._add_grade(grade=grade)
             else:
                 # updating old grade. Assume that each one of the grade, passed, notes can be updated.
@@ -313,7 +315,6 @@ class SqlServer(object):
                         f"\'{current_grade.email}\'")
                     curser.execute(query)
                 self.__conn.commit()
-
 
     def get_gradesTable(self) -> pd.DataFrame:
         """
@@ -449,6 +450,7 @@ class SqlServer(object):
             str(form))
         curser.execute(query)
         self.__conn.commit()
+
 
     def get_forms_required_info_to_adding_answer(self):
         curser = self.__conn.cursor()

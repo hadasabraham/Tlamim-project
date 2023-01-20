@@ -11,7 +11,11 @@ class Grade(object):
 
     def __str__(self):
         passed = self.passed if self.passed is not None else 'NULL'
-        notes = f"\'{self.notes}\'" if self.notes is not None else 'NULL'
+        prepared_notes = None
+        if self.notes is None:
+            notes = 'NULL'
+        else:
+            notes = self.notes.replace('\'', '\'\'')
         res = "(" + f"\'{self.email}\'" + f", {self.stage_index}" + f", {self.grade}" + f", {passed}" + f", {notes})"
         return res
 
@@ -45,8 +49,9 @@ class Grade(object):
         if notes is None:
             return False
         if self.notes is None:
-            self.notes = notes
+            self.notes = notes.strip().replace('\'', '\'\'')
         else:
-            self.notes += "\r\n" + notes
+            self.notes += "\r\n" + notes.strip()
+            self.notes = self.notes.replace('\'', '\'\'')
         return True
 

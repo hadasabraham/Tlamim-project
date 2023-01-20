@@ -1,13 +1,10 @@
 from __future__ import print_function
-
+from dateutil.parser import parse
 import os
 
 from apiclient import discovery
 from httplib2 import Http
 from oauth2client import client, file, tools, clientsecrets
-
-
-
 
 SCOPES = "https://www.googleapis.com/auth/drive"
 DISCOVERY_DOC = "https://forms.googleapis.com/$discovery/rest?version=v1"
@@ -21,13 +18,17 @@ class FormServer(object):
         if store:
             creds = store.get()
         if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets(f'{os.getcwd()}{os.path.sep}forms{os.path.sep}credentials.json', SCOPES)
+            flow = client.flow_from_clientsecrets(f'{os.getcwd()}{os.path.sep}forms{os.path.sep}credentials.json',
+                                                  SCOPES)
             creds = tools.run_flow(flow, store)
 
         self.__form_service = discovery.build('forms', 'v1', http=creds.authorize(Http()),
                                               discoveryServiceUrl=DISCOVERY_DOC,
                                               static_discovery=False)
 
+    @staticmethod
+    def _get_registration_info(form_structure, response) -> tuple[str, str]:
+        pass
 
     def parse_responses_to_add(self, form_id: str, responses_file_type: str):
         form_structure = self.__form_service.forms().get(formId=form_id).execute()
@@ -40,7 +41,6 @@ class FormServer(object):
             res.append((form_id, responses_file_type, timestamp, email, prepared_response))
 
         return res
-
 
     @staticmethod
     def _get_questions_titles(form_structure):
@@ -95,11 +95,8 @@ class FormServer(object):
                 continue
         return res
 
-
     @staticmethod
     def _prepare_response(response, form_structure) -> list[dict]:
         questions_info = FormServer._get_questions_titles(form_structure=form_structure)
 
         return FormServer._get_response_answers(questions_info=questions_info, response=response)
-
-
