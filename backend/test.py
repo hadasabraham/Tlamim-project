@@ -17,15 +17,13 @@ def test(serve):
                             first_name=f"first {i}",
                             last_name=f"last {i}") for i in range(10)]
 
-    """
+
     for s in stages:
         serve.get_sql_server().add_stage(stage=s)
     for c in candidates:
         serve.get_sql_server().add_candidate(candidate=c)
     for f in forms:
         serve.get_sql_server().add_form(form=f)
-    """
-
 
     serve.refresh_forms_answers()
     print(serve.get_candidate_entire_info(email="candidate0@gmail.com"))

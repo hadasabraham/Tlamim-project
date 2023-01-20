@@ -1,5 +1,6 @@
 from sql.SqlServer import SqlServer
 from forms.FormServer import FormServer
+from sql.entities.grade import Grade
 
 
 class BackendServer(object):
@@ -9,9 +10,25 @@ class BackendServer(object):
         self.__forms_server = FormServer()
         self.__sql_server.create_tables()
 
-    def save_snapshot(self, name: str):
+    def get_sql_server(self):
+        return self.__sql_server
+
+
+    def update_grade(self, grade: Grade):
         try:
-            self.__sql_server.save_snapshot(snapshot_name=name)
+            self.__sql_server.update_grade(grade=grade)
+        except Exception as e:
+            print("Got exception", e)
+
+    def save_snapshot(self, snapshot_name: str):
+        try:
+            self.__sql_server.save_snapshot(snapshot_name=snapshot_name)
+        except Exception as e:
+            print("Got exception", e)
+
+    def update_candidate_status(self, email: str, status: str):
+        try:
+            self.__sql_server.update_candidate_status(email=email, status=status)
         except Exception as e:
             print("Got exception", e)
 

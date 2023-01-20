@@ -4,6 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from parameters import *
 from BackendServer import BackendServer
+from sql.entities.grade import Grade
 
 serverApp = FastAPI()
 backendServer = BackendServer()
@@ -26,8 +27,22 @@ async def refresh(request: Request):
 @serverApp.post("/snapshot")
 async def save_snapshot(snapshot: SnapshotParameter):
     if snapshot.name is not None:
-        backendServer.save_snapshot(name=snapshot.name)
+        backendServer.save_snapshot(snapshot_name=snapshot.name)
 
+
+@serverApp.put("/update/grades")
+async def save_snapshot(grade_parameter: GradeParameter):
+    grade = Grade(email=grade_parameter.email,
+                  stage_index=grade_parameter.stage_index,
+                  grade=grade_parameter.score,
+                  passed=grade_parameter.passed,
+                  notes=grade_parameter.notes)
+    backendServer.update_grade(grade=grade)
+
+
+@serverApp.put("/update/status")
+async def save_snapshot(dits: StatusParameter):
+    backendServer.update_candidate_status(email=dits.email, status=dits.status)
 
 
 @serverApp.get("/candidates/search/{condition}", response_class=JSONResponse)
