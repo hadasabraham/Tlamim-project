@@ -1,6 +1,8 @@
 from sql.SqlServer import SqlServer
 from forms.FormServer import FormServer
 from sql.entities.grade import Grade
+from sql.entities.stage import Stage
+from sql.entities.form import Form
 
 
 class BackendServer(object):
@@ -13,11 +15,17 @@ class BackendServer(object):
     def get_sql_server(self):
         return self.__sql_server
 
-    def advance_candidate(self, email: str):
+    def add_stage(self, stage_index: int, stage_name: str):
         try:
-            self.__sql_server.advance_candidate(email=email)
+            self.__sql_server.add_stage(stage=Stage(stage_index=stage_index, stage_name=stage_name))
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception while adding stage", e)
+
+    def add_form(self, stage_index: int, form_id: str, form_link: str):
+        try:
+            self.__sql_server.add_form(form=Form(form_id=form_id, form_link=form_link, stage_index=stage_index))
+        except Exception as e:
+            print("Got exception while adding form", e)
 
     def update_grade(self, grade: Grade):
         try:
@@ -29,7 +37,13 @@ class BackendServer(object):
         try:
             self.__sql_server.save_snapshot(snapshot_name=snapshot_name)
         except Exception as e:
-            print("Got exception snapshot", e)
+            print("Got exception snapshot save", e)
+
+    def load_snapshot(self, snapshot_name: str):
+        try:
+            self.__sql_server.load_snapshot(snapshot_name=snapshot_name)
+        except Exception as e:
+            print("Got exception snapshot load", e)
 
     def update_candidate_status(self, email: str, status: str):
         try:

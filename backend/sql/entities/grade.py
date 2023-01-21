@@ -40,12 +40,7 @@ class Grade(object):
         if self.passed is None:
             self.passed = passed
             return True
-        else:
-            if self.passed != passed:
-                self.passed = passed
-                return True
-            else:
-                return False
+        return False
 
     def update_score(self, score: float | None) -> bool:
         if score is None:
@@ -53,12 +48,8 @@ class Grade(object):
         self.grade = self.grade if score is None else score
         return True
 
-    def add_notes(self, notes: str | None) -> bool:
+    def update_notes(self, notes: str | None) -> bool:
         if notes is None:
             return False
-        if self.notes is None:
-            self.notes = notes.strip().replace('\'', '\'\'')
-        else:
-            self.notes += "\r\n" + notes.strip()
-            self.notes = self.notes.replace('\'', '\'\'')
+        self.notes = notes.strip().replace('\'', '\'\'')
         return True

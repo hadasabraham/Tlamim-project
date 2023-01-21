@@ -32,8 +32,24 @@ async def save_snapshot(snapshot: SnapshotParameter):
         backendServer.save_snapshot(snapshot_name=snapshot.name)
 
 
+@serverApp.get("/snapshot{snapshot_name}")
+async def load_snapshot(snapshot_name: str):
+    if snapshot_name is not None:
+        backendServer.load_snapshot(snapshot_name=snapshot_name)
+
+
+@serverApp.put("/add/stage")
+async def add_stage(stage_parameter: StageParameter):
+    backendServer.add_stage(stage_index=stage_parameter.stage_index, stage_name=stage_parameter.stage_name)
+
+
+@serverApp.put("/add/form")
+async def add_stage(form_parameter: FormParameter):
+    backendServer.add_form(stage_index=form_parameter.stage_index, form_id=form_parameter.form_id, form_link=form_parameter.form_link)
+
+
 @serverApp.put("/update/grades")
-async def save_snapshot(grade_parameter: GradeParameter):
+async def update_grade(grade_parameter: GradeParameter):
     if grade_parameter.passed is None:
         grade = Grade(email=grade_parameter.email,
                       stage_index=grade_parameter.stage_index,
@@ -51,7 +67,7 @@ async def save_snapshot(grade_parameter: GradeParameter):
 
 
 @serverApp.put("/update/status")
-async def save_snapshot(dits: StatusParameter):
+async def update_status(dits: StatusParameter):
     backendServer.update_candidate_status(email=dits.email, status=dits.status)
 
 

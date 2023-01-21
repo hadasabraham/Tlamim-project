@@ -9,7 +9,8 @@ from sql.entities.candidate import Candidate
 
 
 def test(serve):
-    stages = [Stage(stage_index=i, stage_name=f"{i}שלב ") for i in range(7)]
+    """
+        stages = [Stage(stage_index=i, stage_name=f"{i}שלב ") for i in range(7)]
 
     forms = [Form(form_id="1K4v6Iyh9MWTu-4i3uYWtblb57wrwJC_hLnzYLk8UKtk",
                   form_link="https://docs.google.com/forms/d/e/1FAIpQLSelQPNkCQPGjJarUXqqdUaYByhb1wEQMQ3yBrhtJRC9IytnTQ/viewform?usp=sf_link",
@@ -26,10 +27,12 @@ def test(serve):
         serve.get_sql_server().add_candidate(candidate=c)
     for f in forms:
         serve.get_sql_server().add_form(form=f)
+    """
+    serve.get_sql_server().load_snapshot(snapshot_name="snap0")
 
-    serve.refresh_forms_answers()
+    # serve.refresh_forms_answers()
     print(serve.get_candidate_entire_info(email="candidate0@gmail.com"))
-
+    """
     time.sleep(5)
     grade1 = Grade(email="candidate0@gmail.com", stage_index=0, grade=10)
     serve.update_grade(grade=grade1)
@@ -58,6 +61,9 @@ def test(serve):
     grade1 = Grade(email="candidate0@gmail.com", stage_index=1, grade=8, notes="מה קורה")
     serve.update_grade(grade=grade1)
     print(serve.get_candidate_entire_info(email="candidate0@gmail.com"))
+    """
+    # serve.save_snapshot(snapshot_name="snap0")
+    serve.get_sql_server().clear_tables()
 
 
 if __name__ == '__main__':

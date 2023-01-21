@@ -4,7 +4,7 @@ import sqlite3 as sql
 from datetime import datetime
 
 import pandas as pd
-
+from distutils.dir_util import copy_tree
 from sql.entities.stage import Stage
 from sql.entities.form import Form
 from sql.entities.candidate import Candidate
@@ -299,7 +299,7 @@ class SqlServer(object):
                 current_grade.update_timestamp(grade.timestamp)
                 passed_changed = current_grade.update_passed(passed=grade.passed)
                 score_changed = current_grade.update_score(score=grade.grade)
-                notes_changed = current_grade.add_notes(notes=grade.notes)
+                notes_changed = current_grade.update_notes(notes=grade.notes)
                 if passed_changed:
                     query = "UPDATE Grades SET passed={0}, timestamp={1} WHERE stage_index={2} AND email={3}".format(
                         f"{current_grade.passed}",
@@ -307,7 +307,11 @@ class SqlServer(object):
                         f"{current_grade.stage_index}",
                         f"\'{current_grade.email}\'")
                     curser.execute(query)
-                    self.update_candidate_timestamp(email=current_grade.email, timestamp=current_grade.timestamp)
+                    if current_grade.passed:  # automatic advancement of candidate
+                        self.advance_candidate(email=current_grade.email)
+                    else:
+                        self.update_candidate_timestamp(email=current_grade.email, timestamp=current_grade.timestamp)
+
                 if score_changed:
                     query = "UPDATE Grades SET grade={0} WHERE stage_index={1} AND email={2}".format(
                         f"{current_grade.grade}",
@@ -345,7 +349,7 @@ class SqlServer(object):
         table = GradesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=GradesTable.get_sql_cols()):
-            query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES ({0});".format(row)
+            query = "INSERT INTO Grades(email, stage_index, grade, passed, notes, timestamp) VALUES ({0});".format(row)
             curser.execute(query)
         self.__conn.commit()
 
@@ -640,7 +644,8 @@ class SqlServer(object):
         if len(exists.index) == 0:
             return  # candidate in the last stage can't progress
 
-        query = "UPDATE Candidates SET stage_index={0} WHERE email={1}".format(f"{stage_index}", f"\'{email}\'")
+        timestamp = f"\'{datetime.now()}\'"
+        query = "UPDATE Candidates SET stage_index={0}, timestamp={1} WHERE email={2}".format(f"{stage_index}", timestamp, f"\'{email}\'")
         curser.execute(query)
         self.__conn.commit()
 
@@ -804,7 +809,7 @@ class SqlServer(object):
         table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=CandidatesTable.get_sql_cols()):
-            query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status) VALUES ({0});".format(
+            query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status, timestamp) VALUES ({0});".format(
                 row)
             curser.execute(query)
         self.__conn.commit()
@@ -892,9 +897,10 @@ class SqlServer(object):
                                           first_name=row['first_name'],
                                           last_name=row['last_name'],
                                           stage_index=row['stage_index'],
-                                          status=row['status'])
+                                          status=row['status'],
+                                          timestamp=row['timestamp'])
                     res.append(candidate.to_json_list()[0])
-
+                res = sorted(res, key=lambda d: Timestamp(timestamp=d['timestamp']), reverse=True)
                 return res
 
     @staticmethod
@@ -969,6 +975,13 @@ class SqlServer(object):
         grades_path = fr"{base_path}{os.path.sep}gradesTable.xlsx"
         self.export_gradesTable(path=grades_path, file_type="xlsx", index=False, hebrew_table=True)
 
+        folders = ["formsAnswers", "generalQuestions", "privateQuestions"]
+        origin_base = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}"
+        for folder in folders:
+            origin_folder = fr"{origin_base}{folder}"
+            dest = fr"{base_path}{os.path.sep}{folder}"
+            copy_tree(origin_folder, dest)
+
     def load_snapshot(self, snapshot_name):
         base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
         if not os.path.exists(base_path):
@@ -994,3 +1007,10 @@ class SqlServer(object):
 
         grades_path = fr"{base_path}{os.path.sep}gradesTable.xlsx"
         self.load_gradesTable(path=grades_path, file_type="xlsx", hebrew_table=True)
+
+        folders = ["formsAnswers", "generalQuestions", "privateQuestions"]
+        origin_base = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}"
+        for folder in folders:
+            origin_folder = fr"{origin_base}{folder}"
+            copy = fr"{base_path}{os.path.sep}{folder}"
+            copy_tree(copy, origin_folder)
