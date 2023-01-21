@@ -152,7 +152,7 @@ class CandidatesTable(Table):
     def get_sql_cols():
         return [("email", "str", 'דוא"ל'), ("first_name", "str", "שם פרטי"), ("last_name", "str", "שם משפחה"),
                 ("stage_index", "int", "מספר שלב"),
-                ("status", "str", "סטטוס תהליך")]
+                ("status", "str", "סטטוס תהליך"), ("timestamp", "str", "חותמת זמן")]
 
 
 class GeneralQuestionsTable(Table):
@@ -207,4 +207,4 @@ class GradesTable(Table):
     @staticmethod
     def get_sql_cols():
         return [("email", "str", 'דוא"ל'), ("stage_index", "int", "מספר שלב"), ("grade", "float", "ציון"),
-                ("passed", "bool", "עבר/ לא עבר"), ("notes", "str", "הערות")]
+                ("passed", "bool", "עבר/ לא עבר"), ("notes", "str", "הערות"), ("timestamp", "str", "חותמת זמן")]

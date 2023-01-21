@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import uvicorn
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
@@ -32,11 +34,19 @@ async def save_snapshot(snapshot: SnapshotParameter):
 
 @serverApp.put("/update/grades")
 async def save_snapshot(grade_parameter: GradeParameter):
-    grade = Grade(email=grade_parameter.email,
-                  stage_index=grade_parameter.stage_index,
-                  grade=grade_parameter.score,
-                  passed=grade_parameter.passed,
-                  notes=grade_parameter.notes)
+    if grade_parameter.passed is None:
+        grade = Grade(email=grade_parameter.email,
+                      stage_index=grade_parameter.stage_index,
+                      grade=grade_parameter.score,
+                      passed=grade_parameter.passed,
+                      notes=grade_parameter.notes)
+    else:
+        grade = Grade(email=grade_parameter.email,
+                      stage_index=grade_parameter.stage_index,
+                      grade=grade_parameter.score,
+                      passed=grade_parameter.passed,
+                      notes=grade_parameter.notes,
+                      timestamp=f"{datetime.now()}")
     backendServer.update_grade(grade=grade)
 
 

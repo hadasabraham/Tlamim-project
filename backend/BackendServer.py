@@ -13,18 +13,23 @@ class BackendServer(object):
     def get_sql_server(self):
         return self.__sql_server
 
+    def advance_candidate(self, email: str):
+        try:
+            self.__sql_server.advance_candidate(email=email)
+        except Exception as e:
+            print("Got exception", e)
 
     def update_grade(self, grade: Grade):
         try:
             self.__sql_server.update_grade(grade=grade)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception while gradings", e)
 
     def save_snapshot(self, snapshot_name: str):
         try:
             self.__sql_server.save_snapshot(snapshot_name=snapshot_name)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception snapshot", e)
 
     def update_candidate_status(self, email: str, status: str):
         try:
@@ -36,14 +41,14 @@ class BackendServer(object):
         try:
             return self.__sql_server.get_candidate_summarized(email=email)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception candidates summarized", e)
             return []
 
     def get_candidate_entire_info(self, email: str) -> list[dict]:
         try:
             return self.__sql_server.get_candidate_entire_info(email=email)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception get entire info", e)
             return []
 
     def search_candidates(self, condition: str) -> list[dict]:
@@ -67,5 +72,5 @@ class BackendServer(object):
                                                         email=email,
                                                         response=prepared_response)
         except Exception as e:
-            print(e)
+            print("Got exception refresh forms answers", e)
 
