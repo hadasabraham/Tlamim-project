@@ -900,7 +900,7 @@ class SqlServer(object):
                                           status=row['status'],
                                           timestamp=row['timestamp'])
                     res.append(candidate.to_json_list()[0])
-                res = sorted(res, key=lambda d: Timestamp(timestamp=d['timestamp']), reverse=True)
+                res = sorted(res, key=lambda d: Timestamp(timestamp=d['timestamp']))
                 return res
 
     @staticmethod
