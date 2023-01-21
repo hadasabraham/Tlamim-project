@@ -259,6 +259,7 @@ class SqlServer(object):
         :return:
         """
         curser = self.__conn.cursor()
+        print(str(grade))
         query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES {0};".format(str(grade))
         curser.execute(query)
         self.__conn.commit()
@@ -277,9 +278,14 @@ class SqlServer(object):
             curser.execute(query)
             exists = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in GradesTable.get_sql_cols()])
             if len(exists.index) == 0:
+                print("not grade")
                 # no grade ever inserted. assume that the grade has all its necessary entries
-                if grade.grade is None:
-                    return 
+                print("passed",grade.passed)
+                if grade.passed is None or grade.passed == "":
+                    grade.passed = False
+                if grade.notes is None:
+                    grade.notes = ""
+                print("add grade")
                 self._add_grade(grade=grade)
             else:
                 # updating old grade. Assume that each one of the grade, passed, notes can be updated.
@@ -292,7 +298,7 @@ class SqlServer(object):
                                       grade=exists["grade"][0],
                                       passed=exists["passed"][0],
                                       notes=exists["notes"][0])
-
+                print("current grade", current_grade.grade)
                 passed_changed = current_grade.update_passed(passed=grade.passed)
                 score_changed = current_grade.update_score(score=grade.grade)
                 notes_changed = current_grade.add_notes(notes=grade.notes)
@@ -303,6 +309,7 @@ class SqlServer(object):
                         f"\'{current_grade.email}\'")
                     curser.execute(query)
                 if score_changed:
+                    print("score changed")
                     query = "UPDATE Grades SET grade={0} WHERE stage_index={1} AND email={2}".format(
                         f"{current_grade.grade}",
                         f"{current_grade.stage_index}",
@@ -671,7 +678,7 @@ class SqlServer(object):
         forms = []
         for _, row in relevant_forms.iterrows():
             stage_index = int(row['stage_index'])
-            file_path = row['file_path']
+            file_path = row['file_path'].replace("C:\\Users\\halro\\Desktop\\Tlamim-project\\backend\\sql\\data\\formsAnswers\\xlsx\\", "./sql/data/formsAnswers/xlsx/")
             file_type = row['file_type']
             row_index = row['row_index']
             form_answers = Table.get_row_as_json_list(path=file_path, file_type=file_type, row_index=row_index)
@@ -763,7 +770,7 @@ class SqlServer(object):
         answers = candidate.to_json_list()[0]
         for index in range(stage_index, -1, -1):
             answer = dict()
-            answer['stage_index'] = stages_table['stage_index'][index]
+            answer['stage_index'] = str(stages_table['stage_index'][index])
             answer['stage_name'] = stages_table['stage_name'][index]
 
             # the inner list has at most one list[dict]
@@ -779,8 +786,10 @@ class SqlServer(object):
             answer['grade_info'] = sum([list_dict for stage_index, list_dict in grades if stage_index == index], [])
 
             stages.append(answer)
+        answers['stage'] = str(answers['stage'])
         answers['stages'] = stages
-        return [answers]
+        print(answers)
+        return answers
 
     def load_candidatesTable(self, path: str, file_type: str, hebrew_table: bool = False):
         table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
@@ -858,6 +867,7 @@ class SqlServer(object):
     def search_candidates(self, condition: str) -> list[dict]:
         variables = CandidatesTable.get_sql_cols()
         sql_cond = SqlServer._parse_condition(condition=condition, variables=variables)
+        print("sql", sql_cond)
         if not sql_cond:
             return []
         else:
@@ -881,7 +891,9 @@ class SqlServer(object):
 
     @staticmethod
     def _parse_condition(condition: str, variables: list[tuple[str, str, str]]) -> str | None:
+        print("cond", condition)
         condition = condition.strip()
+        
         if condition == "הכול":
             return "TRUE"
         conditions = [cond for cond in condition.split(",") if cond != '']

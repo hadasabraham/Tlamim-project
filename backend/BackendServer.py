@@ -7,7 +7,7 @@ class BackendServer(object):
 
     def __init__(self):
         self.__sql_server = SqlServer(database='test_database')
-        self.__forms_server = FormServer()
+        # self.__forms_server = FormServer()
         self.__sql_server.create_tables()
 
     def get_sql_server(self):
@@ -15,8 +15,10 @@ class BackendServer(object):
 
 
     def update_grade(self, grade: Grade):
+        print(grade)
+        self.__sql_server.update_grade(grade=grade)
         try:
-            self.__sql_server.update_grade(grade=grade)
+            pass
         except Exception as e:
             print("Got exception", e)
 
@@ -40,8 +42,9 @@ class BackendServer(object):
             return []
 
     def get_candidate_entire_info(self, email: str) -> list[dict]:
+        return self.__sql_server.get_candidate_entire_info(email=email)
         try:
-            return self.__sql_server.get_candidate_entire_info(email=email)
+            pass
         except Exception as e:
             print("Got exception", e)
             return []

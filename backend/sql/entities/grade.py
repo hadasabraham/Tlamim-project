@@ -16,7 +16,7 @@ class Grade(object):
             notes = 'NULL'
         else:
             notes = self.notes.replace('\'', '\'\'')
-        res = "(" + f"\'{self.email}\'" + f", {self.stage_index}" + f", {self.grade}" + f", {passed}" + f", {notes})"
+        res = "(" + f"\'{self.email}\'" + f", {self.stage_index}" + f", {self.grade}" + f", {passed}" + f", \"{notes}\")"
         return res
 
     def to_json_list(self) -> list[dict]:

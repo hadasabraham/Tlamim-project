@@ -1,5 +1,5 @@
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import Body, FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from parameters import *
@@ -31,7 +31,8 @@ async def save_snapshot(snapshot: SnapshotParameter):
 
 
 @serverApp.put("/update/grades")
-async def save_snapshot(grade_parameter: GradeParameter):
+async def save_snapshot(grade_parameter: GradeParameter = Body(embed=True)):
+    print("update grade")
     grade = Grade(email=grade_parameter.email,
                   stage_index=grade_parameter.stage_index,
                   grade=grade_parameter.score,
@@ -41,11 +42,12 @@ async def save_snapshot(grade_parameter: GradeParameter):
 
 
 @serverApp.put("/update/status")
-async def save_snapshot(dits: StatusParameter):
+async def save_snapshot(dits: StatusParameter = Body(embed=True)):
+    print("update status")
     backendServer.update_candidate_status(email=dits.email, status=dits.status)
 
 
-@serverApp.get("/candidates/search/{condition}", response_class=JSONResponse)
+@serverApp.get("/candidates/query/{condition}", response_class=JSONResponse)
 async def search_candidates(condition: str):
     if not condition or condition == '':
         JSONResponse([], headers={})

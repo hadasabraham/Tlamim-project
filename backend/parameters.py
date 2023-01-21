@@ -15,4 +15,4 @@ class GradeParameter(BaseModel):
     stage_index: int
     score: float | None
     notes: str | None
-    passed: bool | None
+    passed: str | None
