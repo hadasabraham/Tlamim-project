@@ -23,7 +23,9 @@ serverApp.add_middleware(
 
 @serverApp.post("/refresh_forms_answers")
 async def refresh(request: Request):
+    backendServer.refresh_registration_form()
     backendServer.refresh_forms_answers()
+
 
 
 @serverApp.post("/snapshot")
