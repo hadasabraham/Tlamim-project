@@ -1,10 +1,11 @@
 from sql.SqlServer import SqlServer
 from forms.FormServer import FormServer
 from emails.EmailServer import EmailServer
+from sql.entities.candidate import Candidate
 from sql.entities.grade import Grade
 from sql.entities.stage import Stage
 from sql.entities.form import Form
-
+from dateutil.parser import parse
 
 class BackendServer(object):
 
@@ -16,6 +17,29 @@ class BackendServer(object):
 
     def get_sql_server(self):
         return self.__sql_server
+
+    def refresh_registration_form(self):
+
+        try:
+            form_id = self.__sql_server.get_registration_form_id()
+            if not form_id:
+                return
+            candidates = self.__forms_server.get_registered_candidates(form_id=form_id)
+            for email, first_name, last_name, stage, status, timestamp in candidates:
+                timestamp = str(parse(timestamp))
+                candidate = Candidate(email=email,
+                                      first_name=first_name,
+                                      last_name=last_name,
+                                      stage_index=stage,
+                                      status=status,
+                                      timestamp=timestamp)
+
+                try:
+                    self.__sql_server.add_candidate(candidate=candidate)
+                except Exception as e:
+                    print("Got exception when adding candidates", e)
+        except Exception as e:
+            print("Got error when registering candidates", e)
 
     def add_stage(self, stage_index: int, stage_name: str):
         try:

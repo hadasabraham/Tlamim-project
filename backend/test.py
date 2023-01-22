@@ -1,5 +1,6 @@
 import time
 
+from BackendServer import BackendServer
 from emails.EmailServer import EmailServer
 from sql.SqlServer import SqlServer
 
@@ -63,10 +64,9 @@ def test(serve):
 
 
 if __name__ == '__main__':
-    sql = SqlServer()
-    sql.create_tables()
-    print(sql.registration_info)
-    sql.load_snapshot("snap0")
-    print(sql.registration_info)
-    sql.clear_tables()
+    back = BackendServer()
+    back.load_snapshot(snapshot_name="snap0")
+    print(back.get_sql_server().get_candidatesTable())
+    back.get_sql_server().clear_tables()
+
 

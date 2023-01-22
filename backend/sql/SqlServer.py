@@ -107,6 +107,18 @@ class SqlServer(object):
                 self.registration_info['form_link'] = data['form_link']
 
 
+    def get_registration_form_id(self):
+        if self.registration_info:
+            return self.registration_info['form_id']
+        else:
+            base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+            if os.path.exists(f"{base_path}{os.path.sep}registration_form_info.json"):
+                with open(f"{base_path}{os.path.sep}registration_form_info.json") as json_file:
+                    data = json.load(json_file)
+                    self.registration_info['form_id'] = data['form_id']
+                    self.registration_info['form_link'] = data['form_link']
+                return self.registration_info['form_id']
+            return None
 
     def set_registration_form(self, form_id: str, form_link: str):
         base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
