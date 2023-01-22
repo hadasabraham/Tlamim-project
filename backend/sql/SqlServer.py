@@ -2,6 +2,7 @@ import os
 import shutil
 import sqlite3 as sql
 from datetime import datetime
+import json
 
 from distutils.dir_util import copy_tree
 from sql.entities.stage import Stage
@@ -19,6 +20,7 @@ class SqlServer(object):
 
     def __init__(self, database='test_database'):
         self.__conn = sql.connect(database=database)
+        self.registration_info = dict()
 
     def create_tables(self):
         """
@@ -95,8 +97,33 @@ class SqlServer(object):
         curser.execute(query)
 
         self.__conn.commit()
-
         SqlServer.prepare_inner_directories()
+        base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+
+        if os.path.exists(f"{base_path}{os.path.sep}registration_form_info.json"):
+            with open(f"{base_path}{os.path.sep}registration_form_info.json") as json_file:
+                data = json.load(json_file)
+                self.registration_info['form_id'] = data['form_id']
+                self.registration_info['form_link'] = data['form_link']
+
+
+
+    def set_registration_form(self, form_id: str, form_link: str):
+        base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+        d = dict()
+        d['form_id'] = form_id
+        d['form_link'] = form_link
+        # Serializing json
+        json_object = json.dumps(d, indent=4)
+
+        with open(f"{base_path}{os.path.sep}registration_form_info.json", "w+") as outfile:
+            outfile.write(json_object)
+
+        self.registration_info['form_id'] = form_id
+        self.registration_info['form_link'] = form_link
+
+
+
 
     @staticmethod
     def prepare_inner_directories():
@@ -130,6 +157,9 @@ class SqlServer(object):
                 path = f'{base_path}{directory}{os.path.sep}{f_type}'
                 if os.path.exists(path):
                     shutil.rmtree(path)
+
+        if os.path.exists(f"{base_path}{os.path.sep}registration_form_info.json"):
+            os.remove(f"{base_path}{os.path.sep}registration_form_info.json")
 
     def drop_tables(self):
         """
@@ -981,6 +1011,10 @@ class SqlServer(object):
             dest = fr"{base_path}{os.path.sep}{folder}"
             copy_tree(origin_folder, dest)
 
+        origin = f"{origin_base}{os.path.sep}registration_form_info.json"
+        dest = fr"{base_path}{os.path.sep}registration_form_info.json"
+        shutil.copyfile(origin, dest)
+
     def load_snapshot(self, snapshot_name):
         base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
         if not os.path.exists(base_path):
@@ -1013,3 +1047,14 @@ class SqlServer(object):
             origin_folder = fr"{origin_base}{folder}"
             copy = fr"{base_path}{os.path.sep}{folder}"
             copy_tree(copy, origin_folder)
+
+        origin = f"{origin_base}{os.path.sep}registration_form_info.json"
+        copy = fr"{base_path}{os.path.sep}registration_form_info.json"
+        if os.path.exists(copy):
+            shutil.copyfile(copy, origin)
+
+        if os.path.exists(origin):
+            with open(origin) as json_file:
+                data = json.load(json_file)
+                self.registration_info['form_id'] = data['form_id']
+                self.registration_info['form_link'] = data['form_link']

@@ -10,7 +10,7 @@
       <list>
         <option value="$MODULE_DIR$/sql" />
         <option value="$MODULE_DIR$/forms" />
-        <option value="$MODULE_DIR$/email" />
+        <option value="$MODULE_DIR$/emails" />
         <option value="$MODULE_DIR$/sql/entities" />
       </list>
     </option>

@@ -1,5 +1,6 @@
 from sql.SqlServer import SqlServer
 from forms.FormServer import FormServer
+from emails.EmailServer import EmailServer
 from sql.entities.grade import Grade
 from sql.entities.stage import Stage
 from sql.entities.form import Form
@@ -10,6 +11,7 @@ class BackendServer(object):
     def __init__(self):
         self.__sql_server = SqlServer(database='test_database')
         self.__forms_server = FormServer()
+        self.__email_server = EmailServer()
         self.__sql_server.create_tables()
 
     def get_sql_server(self):
