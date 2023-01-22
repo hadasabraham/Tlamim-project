@@ -806,7 +806,7 @@ class SqlServer(object):
         grades, all_notes = self.get_candidate_grades_info(email=email)
 
         curser = self.__conn.cursor()
-        query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        query = "SELECT * FROM Candidates WHERE email={0}".format(f"\'{email}\'")
         curser.execute(query)
         candidate = pd.DataFrame(curser.fetchall(),
                                  columns=[eng for eng, _, _ in CandidatesTable.get_sql_cols()])
@@ -820,7 +820,6 @@ class SqlServer(object):
         candidate = Candidate(email=email, first_name=first_name, last_name=last_name, stage_index=stage_index,
                               status=status, timestamp=timestamp)
         self.__conn.commit()
-
         stages_table = self.get_stagesTable()
         stages = []
         answers = candidate.to_json_list()[0]

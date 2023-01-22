@@ -5,3 +5,6 @@ backend/forms/token.json
 backend/forms/token.json
 backend/forms/credentials.json
 backend/emails/credentials.json
+backend/emails/token.json
+backend/emails/token.json
+backend/emails/token.json
