@@ -14,7 +14,7 @@ class GeneralQuestions(object):
         self.file_type = file_type.strip()
 
         file_name = file_path.split(f"{os.path.sep}")[-1]
-        header = fr"{os.getcwd()}{os.path.sep}backend{os.path.sep}sql{os.path.sep}data{os.path.sep}generalQuestions"
+        header = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}generalQuestions"
         path = fr"{header}{os.path.sep}{file_type}{os.path.sep}{file_name}"
         if not os.path.exists(path):
             if file_type == "xlsx":

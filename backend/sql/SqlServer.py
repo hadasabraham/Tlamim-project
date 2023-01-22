@@ -3,17 +3,16 @@ import shutil
 import sqlite3 as sql
 from datetime import datetime
 
-import pandas as pd
 from distutils.dir_util import copy_tree
-from sql.entities.stage import Stage
-from sql.entities.form import Form
-from sql.entities.candidate import Candidate
-from sql.entities.grade import Grade
-from sql.entities.generalQuestions import GeneralQuestions
-from sql.entities.formAnswers import FormAnswers
-from sql.entities.privateQuestions import PrivateQuestions
-from sql.entities.timestamp import Timestamp
-from sql.entities.table import *
+from backend.sql.entities.stage import Stage
+from backend.sql.entities.form import Form
+from backend.sql.entities.candidate import Candidate
+from backend.sql.entities.grade import Grade
+from backend.sql.entities.generalQuestions import GeneralQuestions
+from backend.sql.entities.formAnswers import FormAnswers
+from backend.sql.entities.privateQuestions import PrivateQuestions
+from backend.sql.entities.timestamp import Timestamp
+from backend.sql.entities.table import *
 
 
 class SqlServer(object):

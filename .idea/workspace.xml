@@ -2,14 +2,24 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="07cacf33-38e0-4ddc-982a-53ae13446b58" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tlamim-Back-Suggestion/sql/entities/candidate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tlamim-Back-Suggestion/sql/entities/form.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tlamim-Back-Suggestion/sql/entities/grade.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Tlamim-Back-Suggestion/sql/entities/stage.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sqldialects.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Basic-Backend/database/sqlserver.py" beforeDir="false" afterPath="$PROJECT_DIR$/Basic-Backend/database/sqlserver.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Tlamim-Back-Suggestion/sql/SqlServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Tlamim-Back-Suggestion/sql/SqlServer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/BackendServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/BackendServer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/answers.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/SqlServer.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/SqlServer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/candidatesTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/candidatesTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/formsAnswersTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/formsAnswersTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/formsTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/formsTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/generalQuestionsTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/generalQuestionsTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/gradesTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/gradesTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/privateQuestionsTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/privateQuestionsTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/stagesTable.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/data/snapshots/snap0/stagesTable.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/entities/generalQuestions.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/entities/generalQuestions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/entities/privateQuestions.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sql/entities/privateQuestions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sql/test_database" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/test_database" beforeDir="false" afterPath="$PROJECT_DIR$/backend/test_database" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,17 +45,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "true",
-    "last_opened_file_path": "C:/Users/halro/Desktop/Tlamim-project",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/halro/Desktop/Tlamim-project&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
-  <component name="RunManager" selected="Python.quickstart">
+}</component>
+  <component name="RunManager" selected="Python.test (1)">
     <configuration name="parse_form" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Tlamim-project" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -112,8 +122,54 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Tlamim-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/backend/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Tlamim-project" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test (1)" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.quickstart" />
         <item itemvalue="Python.sqlserver" />
         <item itemvalue="Python.parse_form" />
@@ -133,6 +189,8 @@
       <workItem from="1672761401087" duration="9925000" />
       <workItem from="1672773622014" duration="59000" />
       <workItem from="1673283249637" duration="5733000" />
+      <workItem from="1674390124669" duration="266000" />
+      <workItem from="1674390615740" duration="265000" />
     </task>
     <servers />
   </component>
@@ -151,8 +209,10 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/test_py$test__1_.coverage" NAME="test (1) Coverage Results" MODIFIED="1674390859588" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/backend" />
     <SUITE FILE_PATH="coverage/quickstart_py$quickstart.coverage" NAME="quickstart Coverage Results" MODIFIED="1672773630996" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fetchForms" />
     <SUITE FILE_PATH="coverage/Tlamim_project$quickstart.coverage" NAME="quickstart Coverage Results" MODIFIED="1672755706016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fetchForms" />
+    <SUITE FILE_PATH="coverage/test_py$test.coverage" NAME="test Coverage Results" MODIFIED="1674390379980" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/quickstart_py$sqlserver.coverage" NAME="sqlserver Coverage Results" MODIFIED="1672761421213" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/Basic-Backend/database" />
     <SUITE FILE_PATH="coverage/Tlamim_project$parse_form.coverage" NAME="parse_form Coverage Results" MODIFIED="1672752850446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/fetchForms" />
   </component>
