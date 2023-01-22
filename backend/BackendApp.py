@@ -27,7 +27,6 @@ async def refresh(request: Request):
     backendServer.refresh_forms_answers()
 
 
-
 @serverApp.post("/snapshot")
 async def save_snapshot(snapshot: SnapshotParameter):
     if snapshot.name is not None:

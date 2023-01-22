@@ -52,6 +52,7 @@ class Table(object):
 
                 self.table[col_name] = col_values
 
+
         for _, table_row in self.table.iterrows():
             entry = []
             for col_eng_name, col_type, col_heb_name in sql_columns:
@@ -96,7 +97,7 @@ class Table(object):
 
 
     @staticmethod
-    def questions_row_to_json_list(row: pd.DataFrame, english_key: str = "email", hebrew_key: str = 'דוא"ל', include_key=True):
+    def questions_row_to_json_list(row: pd.DataFrame, english_key: str = "email", hebrew_key: str = 'אימייל', include_key=True):
         answers = []
         for question in row.columns.tolist():
             ans = dict()
@@ -140,7 +141,7 @@ class StagesTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("stage_index", "int", "מספר שלב"), ("stage_name", "str", "שם שלב")]
+        return [("stage_index", "int", "שלב"), ("stage_name", "str", "שם שלב")]
 
 
 class CandidatesTable(Table):
@@ -150,9 +151,9 @@ class CandidatesTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("email", "str", 'דוא"ל'), ("first_name", "str", "שם פרטי"), ("last_name", "str", "שם משפחה"),
-                ("stage_index", "int", "מספר שלב"),
-                ("status", "str", "סטטוס תהליך"), ("timestamp", "str", "חותמת זמן")]
+        return [("email", "str", "אימייל"), ("first_name", "str", "שם פרטי"), ("last_name", "str", "שם משפחה"),
+                ("stage_index", "int", "שלב"),
+                ("status", "str", "סטטוס"), ("timestamp", "str", "זמן")]
 
 
 class GeneralQuestionsTable(Table):
@@ -162,7 +163,7 @@ class GeneralQuestionsTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("stage_index", "int", "מספר שלב"), ("file_path", "str", "מיקום קובץ"),
+        return [("stage_index", "int", "שלב"), ("file_path", "str", "מיקום קובץ"),
                 ("file_type", "str", "סוג קובץ")]
 
 
@@ -173,7 +174,7 @@ class FormsTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("form_id", "str", "מזהה"), ("form_link", "str", "קישור"), ("stage_index", "int", "מספר שלב"),
+        return [("form_id", "str", "מזהה"), ("form_link", "str", "קישור"), ("stage_index", "int", "שלב"),
                 ("responses_file_path", "str", "מיקום קובץ תשובות"),
                 ("file_type", "str", "סוג קובץ")]
 
@@ -185,7 +186,7 @@ class FormsAnswersTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("email", "str", 'דוא"ל'), ("form_id", "str", "מזהה"), ("row_index", "int", "שורה"), ("timestamp", "str", "חותמת זמן")]
+        return [("email", "str", "אימייל"), ("form_id", "str", "מזהה"), ("row_index", "int", "שורה"), ("timestamp", "str", "זמן")]
 
 
 class PrivateQuestionsTable(Table):
@@ -195,7 +196,7 @@ class PrivateQuestionsTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("email", "str", 'דוא"ל'), ("stage_index", "int", "מספר שלב"), ("table_path", "str", "מיקום קובץ"),
+        return [("email", "str", "אימייל"), ("stage_index", "int", "שלב"), ("table_path", "str", "מיקום קובץ"),
                 ("file_type", "str", "סוג קובץ")]
 
 
@@ -206,5 +207,5 @@ class GradesTable(Table):
 
     @staticmethod
     def get_sql_cols():
-        return [("email", "str", 'דוא"ל'), ("stage_index", "int", "מספר שלב"), ("grade", "float", "ציון"),
-                ("passed", "bool", "עבר/ לא עבר"), ("notes", "str", "הערות"), ("timestamp", "str", "חותמת זמן")]
+        return [("email", "str", "אימייל"), ("stage_index", "int", "שלב"), ("grade", "float", "ציון"),
+                ("passed", "bool", "עבר/ לא עבר"), ("notes", "str", "הערות"), ("timestamp", "str", "זמן")]

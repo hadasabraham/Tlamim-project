@@ -23,9 +23,11 @@ class BackendServer(object):
         try:
             form_id = self.__sql_server.get_registration_form_id()
             if not form_id:
+                print("no registration form")
                 return
             candidates = self.__forms_server.get_registered_candidates(form_id=form_id)
             for email, first_name, last_name, stage, status, timestamp in candidates:
+                print(email)
                 timestamp = str(parse(timestamp))
                 candidate = Candidate(email=email,
                                       first_name=first_name,

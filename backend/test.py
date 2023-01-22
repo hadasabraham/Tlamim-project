@@ -66,7 +66,9 @@ def test(serve):
 if __name__ == '__main__':
     back = BackendServer()
     back.load_snapshot(snapshot_name="snap0")
+    # back.refresh_registration_form()
     print(back.get_sql_server().get_candidatesTable())
+    # back.save_snapshot(snapshot_name="snap0")
     back.get_sql_server().clear_tables()
 
 

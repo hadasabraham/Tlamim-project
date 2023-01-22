@@ -749,9 +749,9 @@ class SqlServer(object):
             stage_index = int(row['stage_index'])
             file_path = row['file_path']
             file_type = row['file_type']
-            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל',
+            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='אימייל',
                                  value=email)
-            general_answers = Table.questions_row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל',
+            general_answers = Table.questions_row_to_json_list(row=row, english_key="email", hebrew_key='אימייל',
                                                                include_key=False)
             general.append((stage_index, general_answers))
         self.__conn.commit()
@@ -983,7 +983,6 @@ class SqlServer(object):
                 val = key_val[1]
             elif key_val[1] == heb_symbol:
                 val = key_val[0]
-
             if val:
                 if val == "\'ריק\'":
                     val = None
@@ -1023,9 +1022,10 @@ class SqlServer(object):
             dest = fr"{base_path}{os.path.sep}{folder}"
             copy_tree(origin_folder, dest)
 
-        origin = f"{origin_base}{os.path.sep}registration_form_info.json"
+        origin = f"{origin_base}registration_form_info.json"
         dest = fr"{base_path}{os.path.sep}registration_form_info.json"
-        shutil.copyfile(origin, dest)
+        if os.path.exists(origin):
+            shutil.copyfile(origin, dest)
 
     def load_snapshot(self, snapshot_name):
         base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
@@ -1060,7 +1060,7 @@ class SqlServer(object):
             copy = fr"{base_path}{os.path.sep}{folder}"
             copy_tree(copy, origin_folder)
 
-        origin = f"{origin_base}{os.path.sep}registration_form_info.json"
+        origin = f"{origin_base}registration_form_info.json"
         copy = fr"{base_path}{os.path.sep}registration_form_info.json"
         if os.path.exists(copy):
             shutil.copyfile(copy, origin)
