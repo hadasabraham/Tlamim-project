@@ -1,11 +1,11 @@
 import time
 from datetime import datetime
 
-from backend.BackendServer import BackendServer
-from backend.sql.entities.grade import Grade
-from backend.sql.entities.stage import Stage
-from backend.sql.entities.form import Form
-from backend.sql.entities.candidate import Candidate
+from BackendServer import BackendServer
+from sql.entities.grade import Grade
+from sql.entities.stage import Stage
+from sql.entities.form import Form
+from sql.entities.candidate import Candidate
 
 
 def test(serve):

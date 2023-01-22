@@ -1,8 +1,8 @@
-from backend.sql.SqlServer import SqlServer
-from backend.forms.FormServer import FormServer
-from backend.sql.entities.grade import Grade
-from backend.sql.entities.stage import Stage
-from backend.sql.entities.form import Form
+from sql.SqlServer import SqlServer
+from forms.FormServer import FormServer
+from sql.entities.grade import Grade
+from sql.entities.stage import Stage
+from sql.entities.form import Form
 
 
 class BackendServer(object):
