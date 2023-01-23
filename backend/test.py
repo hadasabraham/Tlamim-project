@@ -73,21 +73,17 @@ if __name__ == '__main__':
     # back.add_form(stage_index=0, form_id="1K4v6Iyh9MWTu-4i3uYWtblb57wrwJC_hLnzYLk8UKtk",
     #               form_link="https://docs.google.com/forms/d/e/1FAIpQLSelQPNkCQPGjJarUXqqdUaYByhb1wEQMQ3yBrhtJRC9IytnTQ/viewform?usp=sf_link")
 
-    back.refresh_registration_form()
-    back.refresh_forms_answers()
+    # back.refresh_registration_form()
+    # back.refresh_forms_answers()
 
-    print(back.get_sql_server().get_candidatesTable()[['timestamp']])
-    # print(back.get_candidate_summarized(email="halroy13@gmail.com"))
-    print(back.get_candidate_entire_info(email="halroy13@gmail.com"))
-    back.update_grade(grade=Grade(email="halroy13@gmail.com",
-                                  stage_index=0,
-                                  grade=5,
-                                  passed=True,
-                                  notes="מעניין מאוד",
-                                  timestamp=f"{datetime.now()}"))
-    print(back.get_candidate_entire_info(email="halroy13@gmail.com"))
+    print(back.get_sql_server().get_candidatesTable()[['timestamp', 'email']])
 
-    print(back.get_sql_server().get_candidatesTable()[['stage_index', 'timestamp']])
+    print(back.get_sql_server().get_candidatesTable()[['stage_index', 'timestamp', 'email']])
+
+    tmp = "2023-01-22 17:09:02.197615"
+    print(tmp)
+    print(parse(tmp).replace(microsecond=0))
+
     # back.save_snapshot(snapshot_name="snap0")
     back.get_sql_server().clear_tables()
     back.get_sql_server().drop_tables()
