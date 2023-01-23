@@ -87,8 +87,9 @@ class BackendServer(object):
             return []
 
     def get_candidate_entire_info(self, email: str) -> list[dict]:
+        return self.__sql_server.get_candidate_entire_info(email=email)
         try:
-            return self.__sql_server.get_candidate_entire_info(email=email)
+            pass
         except Exception as e:
             print("Got exception get entire info", e)
             return []

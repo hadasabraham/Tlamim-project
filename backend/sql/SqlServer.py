@@ -868,6 +868,8 @@ class SqlServer(object):
                     for dic in list_dict:
                         d += [{k: str(v)  for k, v in dic.items()}]
                     _forms.append(d)
+            if _forms ==[]:
+                _forms = [_forms]
             print(_forms[0])
             # the inner list has one list[dict] for each form tha candidate answered that relevant to the current stage index
             answer['forms'] = _forms[0] #sum([list_dict for stage_index, list_dict in forms if stage_index == index], [])
