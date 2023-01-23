@@ -7,6 +7,7 @@ from sql.entities.stage import Stage
 from sql.entities.form import Form
 from dateutil.parser import parse
 
+
 class BackendServer(object):
 
     def __init__(self):
@@ -27,8 +28,7 @@ class BackendServer(object):
                 return
             candidates = self.__forms_server.get_registered_candidates(form_id=form_id)
             for email, first_name, last_name, stage, status, timestamp in candidates:
-                print(email)
-                timestamp = str(parse(timestamp))
+                timestamp = str(parse(timestamp).replace(tzinfo=None))
                 candidate = Candidate(email=email,
                                       first_name=first_name,
                                       last_name=last_name,
@@ -106,7 +106,8 @@ class BackendServer(object):
             for _, form in forms_info.iterrows():
                 form_id = form['form_id']
                 responses_file_type = form['file_type']
-                prepared_responses = self.__forms_server.parse_responses_to_add(form_id=form_id, responses_file_type=responses_file_type)
+                prepared_responses = self.__forms_server.parse_responses_to_add(form_id=form_id,
+                                                                                responses_file_type=responses_file_type)
                 for form_id, responses_file_type, timestamp, email, prepared_response in prepared_responses:
                     self.__sql_server.add_form_response(form_id=form_id,
                                                         responses_file_type=responses_file_type,
@@ -115,4 +116,3 @@ class BackendServer(object):
                                                         response=prepared_response)
         except Exception as e:
             print("Got exception refresh forms answers", e)
-

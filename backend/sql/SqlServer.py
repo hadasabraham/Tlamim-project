@@ -5,6 +5,9 @@ from datetime import datetime
 import json
 
 from distutils.dir_util import copy_tree
+
+import pandas as pd
+
 from sql.entities.stage import Stage
 from sql.entities.form import Form
 from sql.entities.candidate import Candidate
@@ -324,6 +327,11 @@ class SqlServer(object):
                 if grade.grade is None:
                     return
                 self._add_grade(grade=grade)
+                if grade.passed is not None:
+                    if grade.passed:
+                        # automatic advancement of candidate
+                        self.advance_candidate(email=grade.email)
+                    self.update_candidate_timestamp(email=grade.email, timestamp=grade.timestamp)
             else:
                 # updating old grade. Assume that each one of the grade, passed, notes can be updated.
                 # if the parameter is None assume no update required
@@ -350,8 +358,7 @@ class SqlServer(object):
                     curser.execute(query)
                     if current_grade.passed:  # automatic advancement of candidate
                         self.advance_candidate(email=current_grade.email)
-                    else:
-                        self.update_candidate_timestamp(email=current_grade.email, timestamp=current_grade.timestamp)
+                    self.update_candidate_timestamp(email=current_grade.email, timestamp=current_grade.timestamp)
 
                 if score_changed:
                     query = "UPDATE Grades SET grade={0} WHERE stage_index={1} AND email={2}".format(
@@ -650,7 +657,21 @@ class SqlServer(object):
         elif file_type == 'xlsx':
             forms_answers_table.to_excel(path, index=index)
 
+
+    def _candidate_exists(self, email: str) -> bool:
+        curser = self.__conn.cursor()
+        query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        curser.execute(query)
+        res = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in CandidatesTable.get_sql_cols()])
+        self.__conn.commit()
+        if len(res.index) == 1:
+            return True
+        else:
+            return False
+
     def add_candidate(self, candidate: Candidate):
+        if self._candidate_exists(email=candidate.email):
+            return
         curser = self.__conn.cursor()
         query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status, timestamp) VALUES {0};".format(
             str(candidate))

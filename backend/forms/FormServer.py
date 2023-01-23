@@ -35,7 +35,7 @@ class FormServer(object):
         status = "מועמד חדש"
 
         for response in responses['responses']:
-            timestamp = str(response['lastSubmittedTime'])
+            timestamp = str(parse(response['lastSubmittedTime']).replace(tzinfo=None))
             email = str(response['respondentEmail'])
             prepared_response = FormServer._prepare_response(response=response, form_structure=form_structure)
 
@@ -60,7 +60,7 @@ class FormServer(object):
         responses = self.__form_service.forms().responses().list(formId=form_id).execute()
         res = []
         for response in responses['responses']:
-            timestamp = response['lastSubmittedTime']
+            timestamp = str(parse(response['lastSubmittedTime']).replace(tzinfo=None))
             email = response['respondentEmail']
             prepared_response = FormServer._prepare_response(response=response, form_structure=form_structure)
             res.append((form_id, responses_file_type, timestamp, email, prepared_response))
