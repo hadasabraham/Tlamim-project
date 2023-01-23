@@ -19,6 +19,14 @@ class BackendServer(object):
     def get_sql_server(self):
         return self.__sql_server
 
+    def get_stages_forms(self):
+        try:
+            res = self.__sql_server.get_stages_forms()
+            return res
+        except Exception as e:
+            print("Error while get stages forms info", e)
+            return []
+
     def refresh_registration_form(self):
 
         try:

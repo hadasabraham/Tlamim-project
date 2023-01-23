@@ -21,6 +21,11 @@ serverApp.add_middleware(
 )
 
 
+@serverApp.get("/stages/forms")
+async def get_stages_forms(request: Request):
+    return backendServer.get_stages_forms()
+
+
 @serverApp.post("/refresh_forms_answers")
 async def refresh(request: Request):
     backendServer.refresh_registration_form()
@@ -46,7 +51,8 @@ async def add_stage(stage_parameter: StageParameter):
 
 @serverApp.put("/add/form")
 async def add_stage(form_parameter: FormParameter):
-    backendServer.add_form(stage_index=form_parameter.stage_index, form_id=form_parameter.form_id, form_link=form_parameter.form_link)
+    backendServer.add_form(stage_index=form_parameter.stage_index, form_id=form_parameter.form_id,
+                           form_link=form_parameter.form_link)
 
 
 @serverApp.put("/update/grades")

@@ -240,6 +240,44 @@ class SqlServer(object):
         self.__conn.commit()
         SqlServer.clear_inner_directories()
 
+
+    @staticmethod
+    def _merge_stages_forms(info_table: pd.DataFrame):
+        res = []
+        for _, row in info_table.iterrows():
+            stage_index = row['stage_index']
+            stage_name = row['stage_name']
+            form_link = row['form_link']
+
+            if res:
+                found = False
+                for d in res:
+                    if d['stage_index'] == stage_index:
+                        d['form_links'] = d['form_link'].append(form_link)
+                        found = True
+                        break
+                if not found:
+                    d = dict()
+                    d['stage_index'] = stage_index
+                    d['stage_name'] = stage_name
+                    d['form_links'] = [form_link]
+                    res.append(d)
+            else:
+                d = dict()
+                d['stage_index'] = stage_index
+                d['stage_name'] = stage_name
+                d['form_links'] = [form_link]
+                res.append(d)
+        return sorted(res, key=lambda x: x['stage_index'])
+
+    def get_stages_forms(self):
+        curser = self.__conn.cursor()
+        query = "SELECT Stages.stage_index, stage_name, form_link FROM Stages INNER JOIN Forms ON Stages.stage_index=Forms.stage_index"
+        curser.execute(query)
+        table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "stage_name", "form_link"])
+        self.__conn.commit()
+        return SqlServer._merge_stages_forms(info_table=table)
+
     def add_stage(self, stage: Stage):
         """
         Adding stage to the stages table
