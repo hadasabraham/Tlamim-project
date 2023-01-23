@@ -12,7 +12,7 @@ class PrivateQuestions(object):
         self.file_type = file_type.strip()
 
         file_name = self.table_path.split(f"{os.path.sep}")[-1]
-        header = fr"{os.getcwd()}backend{os.path.sep}sql{os.path.sep}data{os.path.sep}privateQuestions"
+        header = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}privateQuestions"
         path = fr"{header}{os.path.sep}{file_type}{os.path.sep}{file_name}"
         if not os.path.exists(path):
             if file_type == "xlsx":

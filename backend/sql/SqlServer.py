@@ -1,6 +1,10 @@
 import os
 import shutil
 import sqlite3 as sql
+from datetime import datetime
+import json
+
+from distutils.dir_util import copy_tree
 
 import pandas as pd
 
@@ -19,6 +23,7 @@ class SqlServer(object):
 
     def __init__(self, database='test_database'):
         self.__conn = sql.connect(database=database)
+        self.registration_info = dict()
 
     def create_tables(self):
         """
@@ -61,7 +66,7 @@ class SqlServer(object):
         curser.execute(query)
 
         query = "CREATE TABLE IF NOT EXISTS Candidates(email TEXT PRIMARY KEY, first_name TEXT NOT NULL, " \
-                "last_name NOT NULL, stage_index INTEGER, status TEXT, " \
+                "last_name NOT NULL, stage_index INTEGER, status TEXT, timestamp TEXT," \
                 " FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
@@ -89,14 +94,54 @@ class SqlServer(object):
         curser.execute(query)
 
         query = "CREATE TABLE IF NOT EXISTS Grades(email TEXT, stage_index INTEGER, " \
-                "grade FLOAT NOT NULL, passed BOOL, notes TEXT, PRIMARY KEY(email, stage_index), " \
+                "grade FLOAT NOT NULL, passed BOOL, notes TEXT, timestamp TEXT, PRIMARY KEY(email, stage_index), " \
                 "FOREIGN KEY(email) REFERENCES Candidates(email) ON DELETE CASCADE, " \
                 "FOREIGN KEY(stage_index) REFERENCES Stages(stage_index) ON DELETE CASCADE);"
         curser.execute(query)
 
         self.__conn.commit()
-
         SqlServer.prepare_inner_directories()
+        base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+
+        if os.path.exists(f"{base_path}{os.path.sep}registration_form_info.json"):
+            with open(f"{base_path}{os.path.sep}registration_form_info.json") as json_file:
+                data = json.load(json_file)
+                self.registration_info['form_id'] = data['form_id']
+                self.registration_info['form_link'] = data['form_link']
+
+
+    def get_registration_form_id(self):
+        if self.registration_info:
+            return self.registration_info['form_id']
+        else:
+            base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+            print(base_path)
+            if os.path.exists(f"{base_path}{os.path.sep}registration_form_info.json"):
+                print(f"{base_path}{os.path.sep}registration_form_info.json")
+                with open(f"{base_path}{os.path.sep}registration_form_info.json") as json_file:
+                    data = json.load(json_file)
+                    self.registration_info['form_id'] = data['form_id']
+                    self.registration_info['form_link'] = data['form_link']
+                    print(self.registration_info)
+                return self.registration_info['form_id']
+            return None
+
+    def set_registration_form(self, form_id: str, form_link: str):
+        base_path = f"{os.getcwd()}{os.path.sep}sql{os.path.sep}data"
+        d = dict()
+        d['form_id'] = form_id
+        d['form_link'] = form_link
+        # Serializing json
+        json_object = json.dumps(d, indent=4)
+
+        with open(f"{base_path}{os.path.sep}registration_form_info.json", "w+") as outfile:
+            outfile.write(json_object)
+
+        self.registration_info['form_id'] = form_id
+        self.registration_info['form_link'] = form_link
+
+
+
 
     @staticmethod
     def prepare_inner_directories():
@@ -130,6 +175,9 @@ class SqlServer(object):
                 path = f'{base_path}{directory}{os.path.sep}{f_type}'
                 if os.path.exists(path):
                     shutil.rmtree(path)
+
+        if os.path.exists(f"{base_path}{os.path.sep}registration_form_info.json"):
+            os.remove(f"{base_path}{os.path.sep}registration_form_info.json")
 
     def drop_tables(self):
         """
@@ -259,8 +307,7 @@ class SqlServer(object):
         :return:
         """
         curser = self.__conn.cursor()
-        print(str(grade))
-        query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES {0};".format(str(grade))
+        query = "INSERT INTO Grades(email, stage_index, grade, passed, notes, timestamp) VALUES {0};".format(str(grade))
         curser.execute(query)
         self.__conn.commit()
 
@@ -270,23 +317,24 @@ class SqlServer(object):
         curser.execute(query)
         valid_stage_index = pd.DataFrame(curser.fetchall(), columns=["stage_index"])
         if len(valid_stage_index.index) == 0:
-            return
-        valid_stage_index = valid_stage_index["stage_index"][0] >= grade.stage_index
+            return  # candidate not found
+        valid_stage_index = valid_stage_index["stage_index"][
+                                0] >= grade.stage_index  # can update only stages the candidate passed
         if valid_stage_index:
             query = "SELECT * FROM Grades WHERE stage_index={0} AND email={1}".format(f"{grade.stage_index}",
                                                                                       f"\'{grade.email}\'")
             curser.execute(query)
             exists = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in GradesTable.get_sql_cols()])
             if len(exists.index) == 0:
-                print("not grade")
                 # no grade ever inserted. assume that the grade has all its necessary entries
-                print("passed",grade.passed)
-                if grade.passed is None or grade.passed == "":
-                    grade.passed = False
-                if grade.notes is None:
-                    grade.notes = ""
-                print("add grade")
+                if grade.grade is None:
+                    return
                 self._add_grade(grade=grade)
+                if grade.passed is not None:
+                    if grade.passed:
+                        # automatic advancement of candidate
+                        self.advance_candidate(email=grade.email)
+                    self.update_candidate_timestamp(email=grade.email, timestamp=grade.timestamp)
             else:
                 # updating old grade. Assume that each one of the grade, passed, notes can be updated.
                 # if the parameter is None assume no update required
@@ -297,19 +345,27 @@ class SqlServer(object):
                                       stage_index=exists["stage_index"][0],
                                       grade=exists["grade"][0],
                                       passed=exists["passed"][0],
-                                      notes=exists["notes"][0])
-                print("current grade", current_grade.grade)
+                                      notes=exists["notes"][0],
+                                      timestamp=exists["timestamp"][0])
+
+                current_grade.update_timestamp(grade.timestamp)
                 passed_changed = current_grade.update_passed(passed=grade.passed)
+                print(passed_changed, grade.passed, current_grade.passed)
                 score_changed = current_grade.update_score(score=grade.grade)
-                notes_changed = current_grade.add_notes(notes=grade.notes)
+                notes_changed = current_grade.update_notes(notes=grade.notes)
                 if passed_changed:
-                    query = "UPDATE Grades SET passed={0} WHERE stage_index={1} AND email={2}".format(
+                    query = "UPDATE Grades SET passed={0}, timestamp={1} WHERE stage_index={2} AND email={3}".format(
                         f"{current_grade.passed}",
+                        f"\'{current_grade.timestamp}\'",
                         f"{current_grade.stage_index}",
                         f"\'{current_grade.email}\'")
+                    print(query)
                     curser.execute(query)
+                    if current_grade.passed:  # automatic advancement of candidate
+                        self.advance_candidate(email=current_grade.email)
+                    self.update_candidate_timestamp(email=current_grade.email, timestamp=current_grade.timestamp)
+
                 if score_changed:
-                    print("score changed")
                     query = "UPDATE Grades SET grade={0} WHERE stage_index={1} AND email={2}".format(
                         f"{current_grade.grade}",
                         f"{current_grade.stage_index}",
@@ -346,7 +402,7 @@ class SqlServer(object):
         table = GradesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=GradesTable.get_sql_cols()):
-            query = "INSERT INTO Grades(email, stage_index, grade, passed, notes) VALUES ({0});".format(row)
+            query = "INSERT INTO Grades(email, stage_index, grade, passed, notes, timestamp) VALUES ({0});".format(row)
             curser.execute(query)
         self.__conn.commit()
 
@@ -457,7 +513,6 @@ class SqlServer(object):
             str(form))
         curser.execute(query)
         self.__conn.commit()
-
 
     def get_forms_required_info_to_adding_answer(self):
         curser = self.__conn.cursor()
@@ -607,9 +662,23 @@ class SqlServer(object):
         elif file_type == 'xlsx':
             forms_answers_table.to_excel(path, index=index)
 
-    def add_candidate(self, candidate: Candidate):
+
+    def _candidate_exists(self, email: str) -> bool:
         curser = self.__conn.cursor()
-        query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status) VALUES {0};".format(
+        query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        curser.execute(query)
+        res = pd.DataFrame(curser.fetchall(), columns=[eng for eng, _, _ in CandidatesTable.get_sql_cols()])
+        self.__conn.commit()
+        if len(res.index) == 1:
+            return True
+        else:
+            return False
+
+    def add_candidate(self, candidate: Candidate):
+        if self._candidate_exists(email=candidate.email):
+            return
+        curser = self.__conn.cursor()
+        query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status, timestamp) VALUES {0};".format(
             str(candidate))
         curser.execute(query)
         self.__conn.commit()
@@ -617,6 +686,12 @@ class SqlServer(object):
     def update_candidate_status(self, email: str, status: str):
         curser = self.__conn.cursor()
         query = "UPDATE Candidates SET status={0} WHERE email={1}".format(f"\'{status}\'", f"\'{email}\'")
+        curser.execute(query)
+        self.__conn.commit()
+
+    def update_candidate_timestamp(self, email: str, timestamp: str):
+        curser = self.__conn.cursor()
+        query = "UPDATE Candidates SET timestamp={0} WHERE email={1}".format(f"\'{timestamp}\'", f"\'{email}\'")
         curser.execute(query)
         self.__conn.commit()
 
@@ -629,14 +704,15 @@ class SqlServer(object):
         stage_index = pd.DataFrame(curser.fetchall(), columns=["stage_index"])
         if len(stage_index.index) == 0:
             return  # candidate not found
-        stage_index = stage_index["stage_index"][0]
+        stage_index = stage_index["stage_index"][0] + 1
         query = "SELECT stage_index FROM Stages WHERE stage_index={0}".format(f"{stage_index}")
         curser.execute(query)
         exists = pd.DataFrame(curser.fetchall(), columns=["stage_index"])
         if len(exists.index) == 0:
             return  # candidate in the last stage can't progress
 
-        query = "UPDATE Candidates SET stage_index={0} WHERE email={1}".format(f"{stage_index}", f"\'{email}\'")
+        timestamp = f"\'{datetime.now()}\'"
+        query = "UPDATE Candidates SET stage_index={0}, timestamp={1} WHERE email={2}".format(f"{stage_index}", timestamp, f"\'{email}\'")
         curser.execute(query)
         self.__conn.commit()
 
@@ -664,7 +740,8 @@ class SqlServer(object):
                                   first_name=data['first_name'][0],
                                   last_name=data['last_name'][0],
                                   stage_index=data['stage_index'][0],
-                                  status=data['status'][0])
+                                  status=data['status'][0],
+                                  timestamp=data['timestamp'][0])
             return candidate.to_json_list()
 
     def get_candidate_forms_info(self, email: str) -> list[tuple[int, list[dict]]]:
@@ -678,7 +755,7 @@ class SqlServer(object):
         forms = []
         for _, row in relevant_forms.iterrows():
             stage_index = int(row['stage_index'])
-            file_path = row['file_path'].replace("C:\\Users\\halro\\Desktop\\Tlamim-project\\backend\\sql\\data\\formsAnswers\\xlsx\\", "./sql/data/formsAnswers/xlsx/")
+            file_path = row['file_path'].replace("C:\\Users\\halro\\Desktop\\Tlamim-project\\backend\\sql\\data\\formsAnswers\\xlsx\\", "")
             file_type = row['file_type']
             row_index = row['row_index']
             form_answers = Table.get_row_as_json_list(path=file_path, file_type=file_type, row_index=row_index)
@@ -698,9 +775,9 @@ class SqlServer(object):
             stage_index = int(row['stage_index'])
             file_path = row['file_path']
             file_type = row['file_type']
-            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='דוא"ל',
+            row = Table.find_row(path=file_path, file_type=file_type, english_key="email", hebrew_key='אימייל',
                                  value=email)
-            general_answers = Table.questions_row_to_json_list(row=row, english_key="email", hebrew_key='דוא"ל',
+            general_answers = Table.questions_row_to_json_list(row=row, english_key="email", hebrew_key='אימייל',
                                                                include_key=False)
             general.append((stage_index, general_answers))
         self.__conn.commit()
@@ -724,47 +801,51 @@ class SqlServer(object):
         self.__conn.commit()
         return private
 
-    def get_candidate_grades_info(self, email: str):
+    def get_candidate_grades_info(self, email: str) -> tuple[list, str]:
         curser = self.__conn.cursor()
         grades = []
-        grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes FROM Candidates AS C, Grades AS G " \
+        grades_query = "SELECT G.stage_index, G.grade, G.passed, G.notes, G.timestamp FROM Candidates AS C, Grades AS G " \
                        "WHERE C.email=G.email AND C.email={0} AND C.stage_index >= G.stage_index ORDER BY G.stage_index DESC;".format(
             f"\'{email}\'")
 
         curser.execute(grades_query)
-        grades_table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "grade", "passed", "notes"])
+        grades_table = pd.DataFrame(curser.fetchall(), columns=["stage_index", "grade", "passed", "notes", "timestamp"])
+        all_notes = ""
         for _, row in grades_table.iterrows():
             stage_index = int(row['stage_index'])
             g = row['grade']
             passed = row['passed']
             notes = row['notes']
-            grade = Grade(email=email, stage_index=stage_index, grade=g, passed=passed, notes=notes)
+            if notes is not None:
+                all_notes += f"{notes}\r\n"
+            timestamp = row['timestamp'].split(" ")[0]
+            grade = Grade(email=email, stage_index=stage_index, grade=g, passed=passed, notes=notes, timestamp=timestamp)
             grades.append((stage_index, grade.to_json_list()))
 
         self.__conn.commit()
-        return grades
+        return grades, all_notes
 
     def get_candidate_entire_info(self, email: str) -> list[dict]:
         general = self.get_candidate_generalQuestions_info(email=email)
         forms = self.get_candidate_forms_info(email=email)
         private = self.get_candidate_privateQuestions_info(email=email)
-        grades = self.get_candidate_grades_info(email=email)
+        grades, all_notes = self.get_candidate_grades_info(email=email)
 
         curser = self.__conn.cursor()
-        query = "SELECT * FROM Candidates WHERE email={0};".format(f"\'{email}\'")
+        query = "SELECT * FROM Candidates WHERE email={0}".format(f"\'{email}\'")
         curser.execute(query)
         candidate = pd.DataFrame(curser.fetchall(),
-                                 columns=["email", "first_name", "last_name", "stage_index", "status"])
+                                 columns=[eng for eng, _, _ in CandidatesTable.get_sql_cols()])
         if len(candidate.index) == 0:
             return []
         stage_index = candidate['stage_index'][0]
         first_name = candidate['first_name'][0]
         last_name = candidate['last_name'][0]
         status = candidate['status'][0]
+        timestamp = candidate['timestamp'][0]
         candidate = Candidate(email=email, first_name=first_name, last_name=last_name, stage_index=stage_index,
-                              status=status)
+                              status=status, timestamp=timestamp)
         self.__conn.commit()
-
         stages_table = self.get_stagesTable()
         stages = []
         answers = candidate.to_json_list()[0]
@@ -778,16 +859,25 @@ class SqlServer(object):
 
             # the inner list has at most one list[dict]
             answer['private'] = sum([list_dict for stage_index, list_dict in private if stage_index == index], [])
-
+            
+            _forms = []
+            for stage_index, list_dict in forms:
+                if stage_index == index:
+                    print(list_dict)
+                    d = []
+                    for dic in list_dict:
+                        d += [{k: str(v)  for k, v in dic.items()}]
+                    _forms.append(d)
+            print(_forms[0])
             # the inner list has one list[dict] for each form tha candidate answered that relevant to the current stage index
-            answer['forms'] = sum([list_dict for stage_index, list_dict in forms if stage_index == index], [])
+            answer['forms'] = _forms[0] #sum([list_dict for stage_index, list_dict in forms if stage_index == index], [])
 
             # the inner list has at most one list[dict]
             answer['grade_info'] = sum([list_dict for stage_index, list_dict in grades if stage_index == index], [])
 
             stages.append(answer)
-        answers['stage'] = str(answers['stage'])
         answers['stages'] = stages
+        answers['all_notes'] = all_notes
         print(answers)
         return answers
 
@@ -795,7 +885,7 @@ class SqlServer(object):
         table = CandidatesTable(path=path, table_type=file_type, hebrew_table=hebrew_table)
         curser = self.__conn.cursor()
         for row in table.get_rows_to_load(sql_columns=CandidatesTable.get_sql_cols()):
-            query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status) VALUES ({0});".format(
+            query = "INSERT INTO Candidates(email, first_name, last_name, stage_index, status, timestamp) VALUES ({0});".format(
                 row)
             curser.execute(query)
         self.__conn.commit()
@@ -867,7 +957,6 @@ class SqlServer(object):
     def search_candidates(self, condition: str) -> list[dict]:
         variables = CandidatesTable.get_sql_cols()
         sql_cond = SqlServer._parse_condition(condition=condition, variables=variables)
-        print("sql", sql_cond)
         if not sql_cond:
             return []
         else:
@@ -884,16 +973,15 @@ class SqlServer(object):
                                           first_name=row['first_name'],
                                           last_name=row['last_name'],
                                           stage_index=row['stage_index'],
-                                          status=row['status'])
+                                          status=row['status'],
+                                          timestamp=row['timestamp'])
                     res.append(candidate.to_json_list()[0])
-
+                res = sorted(res, key=lambda d: Timestamp(timestamp=d['timestamp']))
                 return res
 
     @staticmethod
     def _parse_condition(condition: str, variables: list[tuple[str, str, str]]) -> str | None:
-        print("cond", condition)
         condition = condition.strip()
-        
         if condition == "הכול":
             return "TRUE"
         conditions = [cond for cond in condition.split(",") if cond != '']
@@ -930,7 +1018,6 @@ class SqlServer(object):
                 val = key_val[1]
             elif key_val[1] == heb_symbol:
                 val = key_val[0]
-
             if val:
                 if val == "\'ריק\'":
                     val = None
@@ -941,7 +1028,6 @@ class SqlServer(object):
         base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
         if not os.path.exists(base_path):
             os.makedirs(base_path, mode=0o777)
-        print(base_path)
 
         stages_path = fr"{base_path}{os.path.sep}stagesTable.xlsx"
         self.export_stagesTable(path=stages_path, file_type="xlsx", index=False, hebrew_table=True)
@@ -964,11 +1050,22 @@ class SqlServer(object):
         grades_path = fr"{base_path}{os.path.sep}gradesTable.xlsx"
         self.export_gradesTable(path=grades_path, file_type="xlsx", index=False, hebrew_table=True)
 
+        folders = ["formsAnswers", "generalQuestions", "privateQuestions"]
+        origin_base = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}"
+        for folder in folders:
+            origin_folder = fr"{origin_base}{folder}"
+            dest = fr"{base_path}{os.path.sep}{folder}"
+            copy_tree(origin_folder, dest)
+
+        origin = f"{origin_base}registration_form_info.json"
+        dest = fr"{base_path}{os.path.sep}registration_form_info.json"
+        if os.path.exists(origin):
+            shutil.copyfile(origin, dest)
+
     def load_snapshot(self, snapshot_name):
         base_path = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}snapshots{os.path.sep}{snapshot_name}"
         if not os.path.exists(base_path):
             return
-        print(base_path)
 
         stages_path = fr"{base_path}{os.path.sep}stagesTable.xlsx"
         self.load_stagesTable(path=stages_path, file_type="xlsx", hebrew_table=True)
@@ -990,3 +1087,21 @@ class SqlServer(object):
 
         grades_path = fr"{base_path}{os.path.sep}gradesTable.xlsx"
         self.load_gradesTable(path=grades_path, file_type="xlsx", hebrew_table=True)
+
+        folders = ["formsAnswers", "generalQuestions", "privateQuestions"]
+        origin_base = fr"{os.getcwd()}{os.path.sep}sql{os.path.sep}data{os.path.sep}"
+        for folder in folders:
+            origin_folder = fr"{origin_base}{folder}"
+            copy = fr"{base_path}{os.path.sep}{folder}"
+            copy_tree(copy, origin_folder)
+
+        origin = f"{origin_base}registration_form_info.json"
+        copy = fr"{base_path}{os.path.sep}registration_form_info.json"
+        if os.path.exists(copy):
+            shutil.copyfile(copy, origin)
+
+        if os.path.exists(origin):
+            with open(origin) as json_file:
+                data = json.load(json_file)
+                self.registration_info['form_id'] = data['form_id']
+                self.registration_info['form_link'] = data['form_link']

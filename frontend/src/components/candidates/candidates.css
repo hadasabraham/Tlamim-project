@@ -82,3 +82,20 @@
     height: 30px;
     margin-left: 10px;
 }
+.next_stage {
+    margin-top: 10px;
+    height: 30px;
+    width: 100px;
+    margin-left: 10px;
+}
+
+.allnotes {
+    text-align: right;
+}
+
+.all_nodes .rdt_TableHead {
+    height: 0px;
+    text-align: right;
+    width: 0px;
+    padding: 0px;
+}

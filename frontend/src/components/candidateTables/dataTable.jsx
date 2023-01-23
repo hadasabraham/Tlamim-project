@@ -20,7 +20,7 @@ const columns = (onSelect) => {
         name: 'שלב', selector: 'stage', sortable: true 
     },
     {
-        name: 'מצב', selector: 'status', sortable: true, 
+        name: 'סטטוס', selector: 'status', sortable: true, 
         cell: row => (
             <div>
                 <select value={row.status} onChange={(event) => {onSelect(row.email, event)}}>
@@ -30,6 +30,9 @@ const columns = (onSelect) => {
                 </select>
             </div>
         )
+    },
+    {
+        name: 'זמן', selector: 'timestamp', sortable: true
     }
 ];
 }

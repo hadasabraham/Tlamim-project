@@ -1,32 +1,77 @@
 from sql.SqlServer import SqlServer
-from forms.FormServer import FormServer
+#from forms.FormServer import FormServer
+#from emails.EmailServer import EmailServer
+from sql.entities.candidate import Candidate
 from sql.entities.grade import Grade
+from sql.entities.stage import Stage
+from sql.entities.form import Form
+from dateutil.parser import parse
 
 
 class BackendServer(object):
 
     def __init__(self):
         self.__sql_server = SqlServer(database='test_database')
-        # self.__forms_server = FormServer()
+        #self.__forms_server = FormServer()
+        #self.__email_server = EmailServer()
         self.__sql_server.create_tables()
 
     def get_sql_server(self):
         return self.__sql_server
 
+    def refresh_registration_form(self):
+
+        try:
+            form_id = self.__sql_server.get_registration_form_id()
+            if not form_id:
+                print("no registration form")
+                return
+            candidates = self.__forms_server.get_registered_candidates(form_id=form_id)
+            for email, first_name, last_name, stage, status, timestamp in candidates:
+                timestamp = str(parse(timestamp).replace(tzinfo=None))
+                candidate = Candidate(email=email,
+                                      first_name=first_name,
+                                      last_name=last_name,
+                                      stage_index=stage,
+                                      status=status,
+                                      timestamp=timestamp)
+
+                try:
+                    self.__sql_server.add_candidate(candidate=candidate)
+                except Exception as e:
+                    print("Got exception when adding candidates", e)
+        except Exception as e:
+            print("Got error when registering candidates", e)
+
+    def add_stage(self, stage_index: int, stage_name: str):
+        try:
+            self.__sql_server.add_stage(stage=Stage(stage_index=stage_index, stage_name=stage_name))
+        except Exception as e:
+            print("Got exception while adding stage", e)
+
+    def add_form(self, stage_index: int, form_id: str, form_link: str):
+        try:
+            self.__sql_server.add_form(form=Form(form_id=form_id, form_link=form_link, stage_index=stage_index))
+        except Exception as e:
+            print("Got exception while adding form", e)
 
     def update_grade(self, grade: Grade):
-        print(grade)
-        self.__sql_server.update_grade(grade=grade)
         try:
-            pass
+            self.__sql_server.update_grade(grade=grade)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception while gradings", e)
 
     def save_snapshot(self, snapshot_name: str):
         try:
             self.__sql_server.save_snapshot(snapshot_name=snapshot_name)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception snapshot save", e)
+
+    def load_snapshot(self, snapshot_name: str):
+        try:
+            self.__sql_server.load_snapshot(snapshot_name=snapshot_name)
+        except Exception as e:
+            print("Got exception snapshot load", e)
 
     def update_candidate_status(self, email: str, status: str):
         try:
@@ -38,15 +83,14 @@ class BackendServer(object):
         try:
             return self.__sql_server.get_candidate_summarized(email=email)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception candidates summarized", e)
             return []
 
     def get_candidate_entire_info(self, email: str) -> list[dict]:
-        return self.__sql_server.get_candidate_entire_info(email=email)
         try:
-            pass
+            return self.__sql_server.get_candidate_entire_info(email=email)
         except Exception as e:
-            print("Got exception", e)
+            print("Got exception get entire info", e)
             return []
 
     def search_candidates(self, condition: str) -> list[dict]:
@@ -62,7 +106,8 @@ class BackendServer(object):
             for _, form in forms_info.iterrows():
                 form_id = form['form_id']
                 responses_file_type = form['file_type']
-                prepared_responses = self.__forms_server.parse_responses_to_add(form_id=form_id, responses_file_type=responses_file_type)
+                prepared_responses = self.__forms_server.parse_responses_to_add(form_id=form_id,
+                                                                                responses_file_type=responses_file_type)
                 for form_id, responses_file_type, timestamp, email, prepared_response in prepared_responses:
                     self.__sql_server.add_form_response(form_id=form_id,
                                                         responses_file_type=responses_file_type,
@@ -70,5 +115,4 @@ class BackendServer(object):
                                                         email=email,
                                                         response=prepared_response)
         except Exception as e:
-            print(e)
-
+            print("Got exception refresh forms answers", e)

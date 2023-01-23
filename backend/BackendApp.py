@@ -1,5 +1,7 @@
+from datetime import datetime
+
 import uvicorn
-from fastapi import Body, FastAPI, Request
+from fastapi import Body,FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from parameters import *
@@ -21,33 +23,58 @@ serverApp.add_middleware(
 
 @serverApp.post("/refresh_forms_answers")
 async def refresh(request: Request):
+    backendServer.refresh_registration_form()
     backendServer.refresh_forms_answers()
 
 
 @serverApp.post("/snapshot")
-async def save_snapshot(snapshot: SnapshotParameter):
+async def save_snapshot(snapshot: SnapshotParameter = Body(embed=True)):
     if snapshot.name is not None:
         backendServer.save_snapshot(snapshot_name=snapshot.name)
 
 
+@serverApp.get("/snapshot{snapshot_name}")
+async def load_snapshot(snapshot_name: str):
+    print(snapshot_name)
+    if snapshot_name is not None:
+        backendServer.load_snapshot(snapshot_name=snapshot_name)
+
+
+@serverApp.put("/add/stage")
+async def add_stage(stage_parameter: StageParameter = Body(embed=True)):
+    backendServer.add_stage(stage_index=stage_parameter.stage_index, stage_name=stage_parameter.stage_name)
+
+
+@serverApp.put("/add/form")
+async def add_stage(form_parameter: FormParameter = Body(embed=True)):
+    backendServer.add_form(stage_index=form_parameter.stage_index, form_id=form_parameter.form_id, form_link=form_parameter.form_link)
+
+
 @serverApp.put("/update/grades")
-async def save_snapshot(grade_parameter: GradeParameter = Body(embed=True)):
-    print("update grade")
-    grade = Grade(email=grade_parameter.email,
-                  stage_index=grade_parameter.stage_index,
-                  grade=grade_parameter.score,
-                  passed=grade_parameter.passed,
-                  notes=grade_parameter.notes)
+async def update_grade(grade_parameter: GradeParameter = Body(embed=True)):
+    print(grade_parameter)
+    if grade_parameter.passed is None:
+        grade = Grade(email=grade_parameter.email,
+                      stage_index=grade_parameter.stage_index,
+                      grade=grade_parameter.score,
+                      passed=grade_parameter.passed,
+                      notes=grade_parameter.notes)
+    else:
+        grade = Grade(email=grade_parameter.email,
+                      stage_index=grade_parameter.stage_index,
+                      grade=grade_parameter.score,
+                      passed=grade_parameter.passed,
+                      notes=grade_parameter.notes,
+                      timestamp=f"{datetime.now()}")
     backendServer.update_grade(grade=grade)
 
 
 @serverApp.put("/update/status")
-async def save_snapshot(dits: StatusParameter = Body(embed=True)):
-    print("update status")
+async def update_status(dits: StatusParameter = Body(embed=True)):
     backendServer.update_candidate_status(email=dits.email, status=dits.status)
 
 
-@serverApp.get("/candidates/query/{condition}", response_class=JSONResponse)
+@serverApp.get("/candidates/search/{condition}", response_class=JSONResponse)
 async def search_candidates(condition: str):
     if not condition or condition == '':
         JSONResponse([], headers={})

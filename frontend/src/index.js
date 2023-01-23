@@ -4,6 +4,7 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { BrowserRouter as Router, Route, Routes, useParams } from 'react-router-dom'
 
 import Header from "./components/Header";
+import AddStages from "./components/AddStages";
 import CandidatesTable from "./components/CandidatesTable";  
 import Candidate from "./components/candidates/candidates";
 
@@ -28,12 +29,14 @@ function Lcandidate(){
     );
 }
 
+
 const rootElement = document.getElementById("root")
 ReactDOM.render(
   <Router>
     <div>
       <Routes>
         <Route path="/candidate/:email" element={<Lcandidate />} />
+        <Route path="/addStages" element={<AddStages />} />
         <Route path="/" element={<App />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>

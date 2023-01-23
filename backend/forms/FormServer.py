@@ -26,16 +26,41 @@ class FormServer(object):
                                               discoveryServiceUrl=DISCOVERY_DOC,
                                               static_discovery=False)
 
+
+    def get_registered_candidates(self, form_id):
+        form_structure = self.__form_service.forms().get(formId=form_id).execute()
+        responses = self.__form_service.forms().responses().list(formId=form_id).execute()
+        res = []
+        stage = 0
+        status = "מועמד חדש"
+
+        for response in responses['responses']:
+            timestamp = str(parse(response['lastSubmittedTime']).replace(tzinfo=None))
+            email = str(response['respondentEmail'])
+            prepared_response = FormServer._prepare_response(response=response, form_structure=form_structure)
+
+            first_name, last_name = FormServer._get_registration_info(prepared_response=prepared_response)
+            res.append((email, first_name, last_name, stage, status, timestamp))
+        return res
+
     @staticmethod
-    def _get_registration_info(form_structure, response) -> tuple[str, str]:
-        pass
+    def _get_registration_info(prepared_response):
+        first_name, last_name = None, None
+        for d in prepared_response:
+            q = d['title']
+            a = d['answer']
+            if q == "שם פרטי":
+                first_name = a
+            elif q == "שם משפחה":
+                last_name = a
+        return first_name, last_name
 
     def parse_responses_to_add(self, form_id: str, responses_file_type: str):
         form_structure = self.__form_service.forms().get(formId=form_id).execute()
         responses = self.__form_service.forms().responses().list(formId=form_id).execute()
         res = []
         for response in responses['responses']:
-            timestamp = response['lastSubmittedTime']
+            timestamp = str(parse(response['lastSubmittedTime']).replace(tzinfo=None))
             email = response['respondentEmail']
             prepared_response = FormServer._prepare_response(response=response, form_structure=form_structure)
             res.append((form_id, responses_file_type, timestamp, email, prepared_response))
