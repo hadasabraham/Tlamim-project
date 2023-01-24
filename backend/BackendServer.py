@@ -19,6 +19,15 @@ class BackendServer(object):
     def get_sql_server(self):
         return self.__sql_server
 
+    def get_stages_forms(self):
+        res = self.__sql_server.get_stages_forms()
+        try:
+            print(res)
+            return res
+        except Exception as e:
+            print("Error while get stages forms info", e)
+            return []
+
     def refresh_registration_form(self):
 
         try:
@@ -87,9 +96,8 @@ class BackendServer(object):
             return []
 
     def get_candidate_entire_info(self, email: str) -> list[dict]:
-        return self.__sql_server.get_candidate_entire_info(email=email)
         try:
-            pass
+            return self.__sql_server.get_candidate_entire_info(email=email)
         except Exception as e:
             print("Got exception get entire info", e)
             return []

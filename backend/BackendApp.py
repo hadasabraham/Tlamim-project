@@ -21,6 +21,11 @@ serverApp.add_middleware(
 )
 
 
+@serverApp.get("/stages/forms")
+async def get_stages_forms(request: Request):
+    return backendServer.get_stages_forms()
+
+
 @serverApp.post("/refresh_forms_answers")
 async def refresh(request: Request):
     backendServer.refresh_registration_form()
@@ -35,7 +40,6 @@ async def save_snapshot(snapshot: SnapshotParameter = Body(embed=True)):
 
 @serverApp.get("/snapshot{snapshot_name}")
 async def load_snapshot(snapshot_name: str):
-    print(snapshot_name)
     if snapshot_name is not None:
         backendServer.load_snapshot(snapshot_name=snapshot_name)
 
@@ -52,7 +56,6 @@ async def add_stage(form_parameter: FormParameter = Body(embed=True)):
 
 @serverApp.put("/update/grades")
 async def update_grade(grade_parameter: GradeParameter = Body(embed=True)):
-    print(grade_parameter)
     if grade_parameter.passed is None:
         grade = Grade(email=grade_parameter.email,
                       stage_index=grade_parameter.stage_index,

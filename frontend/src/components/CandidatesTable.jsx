@@ -26,7 +26,7 @@ class PopUp extends Component
                     </span>
                     <form>
                         <label>
-                            Name:
+                            Snapshot Name:
                             <input type="text" name="name" onChange={this.handleName} />
                         </label>
                         <button className="submit" onClick={this.handleClick}>submit</button>
@@ -45,6 +45,11 @@ export default function CandidatesTable() {
         setCandidateList(data)
     }
     const [state, setState] = useState(false)
+    const [menu, setMenu] = useState(false)
+    const onMenu = () => {
+        setMenu(!menu);
+        //
+    }
     const handleSearch = (value) => {
         if (value === "")
         {
@@ -86,8 +91,14 @@ export default function CandidatesTable() {
         onExport(); 
     };
 
-    const onAddStage = () => {
-        window.location.href = 'http://localhost:3000/addStages';
+    const onRefresh = async () => {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ "request": {} })
+        };
+        await fetch('http://localhost:8001/refresh_forms_answers', requestOptions);
+        fetchTodos("הכול");
     };
 
     useEffect(() => {
@@ -99,7 +110,7 @@ export default function CandidatesTable() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 10fr 1fr" }}>
                 <button className="export" onClick={onExport}>export</button>
                 <SearchField placeholder="Search candidates" onChange={handleSearch} />
-                <button className="export" onClick={onAddStage}>add stages</button>
+                <button className="export" onClick={onRefresh}>refresh</button>
             </div>
             {state ? <PopUp toggle={onToggle} /> : null}
             {data_table(candidates_list, onSelect)}

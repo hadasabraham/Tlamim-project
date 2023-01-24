@@ -1,4 +1,5 @@
 import React, { useEffect, useState, Component } from "react";
+import DataTable from 'react-data-table-component';
 import Header from './Header';
 
 class StagePopUp extends Component {
@@ -90,10 +91,18 @@ class FormPopUp extends Component {
 
 
 
-
 export default function AddStages() {
     const [sstate, setsState] = useState(false);
     const [fstate, setfState] = useState(false);
+    const [stage_list, setStageList] = useState([])
+    const fetchTodos = async () => {
+        const response = await fetch("http://localhost:8001/stages/forms")
+        const data = await response.json()
+        setStageList(data)
+    }
+    useEffect(() => {
+        fetchTodos()
+    }, [])
     const addStage = () => {
         setsState(!sstate);
     }
@@ -133,9 +142,40 @@ export default function AddStages() {
     const onClick = () => {
         window.location.href = 'http://localhost:3000';
     }
+
+    const columns = [
+        {
+            name: "מספר השלב", selector: "stage_index", 
+        },
+        {
+            name: "שם השלב", selector: "stage_name", 
+        }
+    ];
+
+    const rowClicked = (row, e) => {
+        const links = [];
+        row.data.form_links.forEach((data) => {
+            links.push(<a href={data}>{data}</a>)
+        })
+        return (
+            <div>
+                {links}
+            </div>
+        );
+    };
+
     return (
         <div>
-            {Header("Add Stages")}
+            
+            {Header("הוספת שלב")}
+            <DataTable className="candidate-table"
+                columns={columns}
+                data={stage_list}
+                expandableRows
+                expandOnRowClicked
+                expandableRowsComponent={rowClicked}
+
+            />
             <button onClick={onClick}>back</button>
             <button onClick={addStage}>addStage</button>
             {sstate ? <StagePopUp toggle={onStageToggle} /> : null}

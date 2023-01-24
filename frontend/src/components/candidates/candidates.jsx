@@ -40,7 +40,7 @@ const columns = (onSelect) => [
         name: 'מצב', selector: 'passed', sortable: true, cell: row => <div style={{ fontSize: 20, textAlign: 'center' }}>{passed_str(row.grade_info[0]?.passed)}</div>
     }, 
     {
-        name: 'זמן', selector: 'timestamp', sortable: true, cell: row => <div style={{ fontSize: 20, textAlign: 'center' }}>{row.grade_info[0]?.timestamp}</div>
+        name: 'שינוי אחרון', selector: 'timestamp', sortable: true, cell: row => <div style={{ fontSize: 20, textAlign: 'center' }}>{row.grade_info[0]?.timestamp}</div>
     }
 
 ];

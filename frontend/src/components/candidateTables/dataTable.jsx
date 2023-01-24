@@ -32,7 +32,7 @@ const columns = (onSelect) => {
         )
     },
     {
-        name: 'זמן', selector: 'timestamp', sortable: true
+        name: 'שינוי אחרון', selector: 'timestamp', sortable: true
     }
 ];
 }
