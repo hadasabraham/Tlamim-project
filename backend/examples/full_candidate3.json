@@ -1,0 +1,19 @@
+{
+  "name": "לילך לוי",
+  "email": "avi@gmail.com",
+  "current_stage": 0,
+  "status": "חדש",
+  "phone": "0522222567",
+  "modify": "10/04/2023, 12:35:38",
+  "answers": [],
+  "grades": [],
+  "missing": [
+    {
+      "stage": 0,
+      "form_id": "1oB-Uqee4MkneaouZLTn2VeljHUTgKCh6o93qKG1WJfU",
+      "form_link": "https://docs.google.com/forms/d/e/1FAIpQLScOOa8EoqZuo5cTTmEOr10j8dAIo9oF5umX--c2hdnVdVOdjQ/viewform?usp=sf_link"
+    }
+  ],
+  "notes": "",
+  "passed": None
+}
