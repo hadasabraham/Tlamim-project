@@ -40,7 +40,7 @@ def search_candidates(db: Database, condition: str) -> list[dict]:
         candidate_info['email'] = candidate.email
         candidate_info['stage'] = candidate.stage
         candidate_info['status'] = candidate.status
-        candidate_info['last_modify'] = candidate.modify
+        candidate_info['last_modify'] = candidate.modify.strftime("%d/%m/%Y, %H:%M:%S")
         candidate_info['phone'] = candidate.phone
         res.append(candidate_info)
     return res

@@ -9,7 +9,7 @@ DISCOVERY_DOC = "https://forms.googleapis.com/$discovery/rest?version=v1"
 
 
 class FormServer(object):
-    def __init__(self, token_path="token.json", credentials_path="credentials.json"):
+    def __init__(self, token_path="form_token.json", credentials_path="form_credentials.json"):
 
         store = file.Storage(token_path)
         creds = None

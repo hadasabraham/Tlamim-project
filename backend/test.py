@@ -1,5 +1,7 @@
+import datetime
+
 from FormsServer import FormServer
-from Tables import Database
+from Tables import Database, Candidate
 from pathParameters.parameters import RegistrationFormParameter, StageParameter, FormParameter, StatusParameter, \
     GradeParameter, DecisionParameter
 from utils import search_candidates, set_registration_form, refresh_registration, reset_database, add_stage, add_form, \
@@ -10,7 +12,7 @@ def main():
     form_id = "1wVJJhLn5Jaq3Dve-WhYwxt7nysmnSJISzzayRSypzS8"
     form_link = "https://docs.google.com/forms/d/e/1FAIpQLSd7tEnBxb6pUwTC70DgNHBEfl815LO0YxdaidBHk4I-ml2xog/viewform?usp=sf_link"
 
-    server = FormServer(token_path="token.json", credentials_path="credentials.json")
+    server = FormServer(token_path="form_token.json", credentials_path="form_credentials.json")
     db = Database()
     set_registration_form(db=db, server=server, param=RegistrationFormParameter(form_id=form_id, form_link=form_link))
 
@@ -22,6 +24,7 @@ def main():
     except Exception as e:
         print("Stage already exists")
         print(e)
+
 
     refresh_registration(db=db, server=server)
 
@@ -69,6 +72,18 @@ def main():
 
     try:
         email = "avi@gmail.com"
+        param = "אימייל"
+        condition = f"{param} = {email}"
+        print(search_candidates(db=db, condition=condition))
+    except Exception as e:
+        print("Set search error")
+        print(e)
+
+
+
+
+    try:
+        email = "avi@gmail.com"
         print("full info before decision", get_candidate_full_info(db=db, email=email))
         set_decision(db=db, param=DecisionParameter(email=email, stage=0, passed=True))
         print("full info after decision", get_candidate_full_info(db=db, email=email), end="\r\n\r\n")
@@ -80,7 +95,6 @@ def main():
 
     try:
         reset_database(db=db)
-        pass
     except Exception as e:
         print("Delete failed")
         print(e)
