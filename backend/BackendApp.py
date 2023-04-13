@@ -28,6 +28,11 @@ async def clear(request: Request):
     utils.reset_database(db=db)
 
 
+@serverApp.post("/set/status")
+async def set_registration(status_parameter: StatusParameter = Body(embed=True)):
+    utils.update_status(db=db, param=status_parameter)
+
+
 @serverApp.post("/set/registration")
 async def set_registration(registration_parameter: RegistrationFormParameter = Body(embed=True)):
     utils.set_registration_form(db=db, server=formServer, param=registration_parameter)
@@ -58,7 +63,6 @@ async def set_grade(grade_parameter: GradeParameter = Body(embed=True)):
     utils.add_grade(db=db, param=grade_parameter)
 
 
-
 @serverApp.post("/set/decision")
 async def set_grade(decision_parameter: DecisionParameter = Body(embed=True)):
     next_stage_links = utils.set_decision(db=db, param=decision_parameter)
@@ -75,6 +79,13 @@ async def get_candidates(condition: str):
 async def get_candidate(email: str):
     info = utils.get_candidate_full_info(db=db, email=email)
     return JSONResponse(content=info)
+
+
+@serverApp.get("/stages", response_class=JSONResponse)
+async def get_candidate(email: str):
+    info = utils.get_stages_info(db=db)
+    return JSONResponse(content=info)
+
 
 if __name__ == "__main__":
     uvicorn.run("BackendApp:serverApp", host="127.0.0.1", port=8001)

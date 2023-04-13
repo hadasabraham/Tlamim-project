@@ -15,20 +15,20 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googlea
 
 class EmailServer(object):
 
-    def __init__(self):
+    def __init__(self, token_path="gmail_token.json", credentials_path="gmail_credentials.json"):
         self.__service = None
         creds = None
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        if os.path.exists(f'{os.getcwd()}{os.path.sep}emails{os.path.sep}token.json'):
-            creds = Credentials.from_authorized_user_file(f'{os.getcwd()}{os.path.sep}emails{os.path.sep}token.json', SCOPES)
+        if os.path.exists(token_path):
+            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
         # If there are no (valid) credentials available, let the user log in.
         if not creds or not creds.valid:
             if creds and creds.expired and creds.refresh_token:
                 creds.refresh(Request())
             else:
-                flow = InstalledAppFlow.from_client_secrets_file(f'{os.getcwd()}{os.path.sep}emails{os.path.sep}credentials.json', SCOPES)
+                flow = InstalledAppFlow.from_client_secrets_file(credentials_path, SCOPES)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open(f'{os.getcwd()}{os.path.sep}emails{os.path.sep}token.json', 'w') as token:

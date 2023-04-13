@@ -1,8 +1,9 @@
+import json
 from collections import defaultdict
 from datetime import datetime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, create_engine, MetaData, Table, Text, ForeignKey, \
-    PrimaryKeyConstraint, select, Boolean
+    PrimaryKeyConstraint, Boolean
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import sessionmaker
@@ -253,14 +254,18 @@ class Database(object):
         next_stage_links = []
         with self.session() as session:
             candidate = session.query(Candidate).filter(Candidate.email == decision.email).first()
-            exists = session.query(Decision).filter(Decision.stage == decision.stage, Decision.email == decision.email).first()
+            exists = session.query(Decision).filter(Decision.stage == decision.stage,
+                                                    Decision.email == decision.email).first()
             if not exists and candidate and decision.stage <= candidate.stage:
                 session.add(decision)
             session.commit()
 
         if not exists and candidate and decision.stage <= candidate.stage and decision.passed:
-            self.advance_candidate(email=decision.email)
+            self.advance_candidate(email=decision.email)  # advance the candidate to the next stage if such exist
+
+            # get the forms of the next stage that the candidate should fill
             forms = session.query(Form).filter(Form.stage == candidate.stage + 1).all()
+            # if the next stage not exists there will be no forms to this stage
             for form in forms:
                 next_stage_links.append(form.form_link)
         return next_stage_links
@@ -499,7 +504,8 @@ class Database(object):
             for stage, info in forms_info.items():
                 answers_info.append({"stage": stage, "answers": info})
 
-            decision = session.query(Decision).filter(Decision.stage == candidate.stage, Decision.email == candidate.email).first()
+            decision = session.query(Decision).filter(Decision.stage == candidate.stage,
+                                                      Decision.email == candidate.email).first()
             session.commit()
         candidate_full = {'name': candidate.first_name + " " + candidate.last_name, 'email': candidate.email,
                           'current_stage': candidate.stage, 'status': candidate.status, 'phone': candidate.phone,
@@ -511,8 +517,36 @@ class Database(object):
 
         return candidate_full
 
+    def export_candidates(self, condition: str, path: str):
+        candidates = self.search_candidates(condition=condition)
+        table = []
+        for candidate in candidates:
+            info = self.get_candidate_info(email=candidate.email)
+            table.append(info)
+
+        with open(path, "w") as copy:
+            json.dump(table, copy)
+
     def get_form_structure_info(self, form_id: str):
         return self.forms_db.get_form_structure_info(form_id=form_id)
+
+    def get_stages_info(self):
+        forms_partition = defaultdict(lambda: [])
+        res = []
+        with self.session() as session:
+            forms = session.query(Form)
+            for form in forms:
+                form_dict = {'link': form.form_link, 'id': form.form_id}
+                forms_partition[form.stage].append(form_dict)
+
+            stages = session.query(Stage).order_by(Stage.index)
+
+            for stage in stages:
+                stage_dict = {'index': stage.index, 'name': stage.name, 'msg': stage.msg, 'forms': forms_partition[stage.index]}
+                res.append(stage_dict)
+        return res
+
+
 
     @staticmethod
     def _fk_pragma_on_connect(dbapi_con, con_record):

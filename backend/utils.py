@@ -13,6 +13,8 @@ def reset_database(db: Database):
 def set_decision(db: Database, param: DecisionParameter):
     decision = Decision(stage=param.stage, email=param.email, passed=param.passed)
     next_stage_links = db.set_decision(decision=decision)
+
+    EmailServer()
     return next_stage_links
 
 
@@ -137,3 +139,7 @@ def set_registration_form(db: Database, server: FormServer, param: RegistrationF
 
 def update_status(db: Database, param: StatusParameter):
     db.update_status(email=param.email, status=param.status)
+
+
+def get_stages_info(db: Database):
+    return db.get_stages_info()
