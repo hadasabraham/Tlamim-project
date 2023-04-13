@@ -82,7 +82,7 @@ async def get_candidate(email: str):
 
 
 @serverApp.get("/stages", response_class=JSONResponse)
-async def get_candidate(email: str):
+async def get_stages():
     info = utils.get_stages_info(db=db)
     return JSONResponse(content=info)
 
