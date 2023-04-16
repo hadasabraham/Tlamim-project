@@ -14,7 +14,7 @@ def set_decision(db: Database, param: DecisionParameter):
     decision = Decision(stage=param.stage, email=param.email, passed=param.passed)
     next_stage_links = db.set_decision(decision=decision)
 
-    EmailServer()
+    # EmailServer()
     return next_stage_links
 
 

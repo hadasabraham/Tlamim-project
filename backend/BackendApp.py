@@ -12,6 +12,7 @@ import utils
 serverApp = FastAPI()
 db = Database()
 formServer = FormServer()
+utils.refresh_all_forms(db=db, server=formServer)
 
 origins = ["*"]
 serverApp.add_middleware(
@@ -53,7 +54,7 @@ async def add_stage(stage_parameter: StageParameter = Body(embed=True)):
     utils.add_stage(db=db, param=stage_parameter)
 
 
-@serverApp.post("/add/form")
+@serverApp.put("/add/form/")
 async def add_form(form_parameter: FormParameter = Body(embed=True)):
     utils.add_form(db=db, server=formServer, param=form_parameter)
 

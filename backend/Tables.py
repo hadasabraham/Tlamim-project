@@ -345,6 +345,11 @@ class Database(object):
                 res = session.query(Candidate)
                 session.commit()
             return res
+        if condition == 'הכול':
+            with self.session() as session:
+                res = session.query(Candidate).filter(
+                    Database._concat_condition_and(conditions=[True])).order_by(Candidate.modify)
+            return res
         parsed, succeed = Database._parse_condition(condition=condition)
         if not succeed:
             return []
@@ -475,6 +480,7 @@ class Database(object):
             return {}
 
         missing_forms = []
+        stages_info = {}
         answers_info = []
         grades_info = []
         notes = ""
@@ -482,6 +488,7 @@ class Database(object):
             forms = session.query(Form).filter(Form.stage <= candidate.stage)
 
             forms_info = defaultdict(lambda: [])
+
             for form in forms:
                 response = self.forms_db.get_candidate_response(form_id=form.form_id, email=email)
                 if response:
@@ -491,29 +498,49 @@ class Database(object):
                     for q, a in q_a:
                         forms_info[form.stage].append({'question': q, 'answer': a})
                 else:
+                    #stages_info[str(form.stage)]['missing'] += [{'form_id': form.form_id, 'form_link': form.form_link}]
                     missing = {'stage': form.stage, 'form_id': form.form_id, 'form_link': form.form_link}
                     missing_forms.append(missing)
 
+            for stage in forms_info.keys():
+                stages_info[str(stage)] = {
+                    'answers': [], 'grade': "", 'note': "", 'missing': []}
+                
             grades = session.query(Grade).filter(
                 Grade.email == candidate.email, Grade.stage <= candidate.stage).all()
             for grade in grades:
+                stages_info[str(grade.stage)]["grade"] = str(grade.score)
+                stages_info[str(grade.stage)]["notes"] = grade.notes
                 grades_info.append({"stage": grade.stage, "score": grade.score, "notes": grade.notes})
                 if grade.notes:
                     notes += grade.notes + "\r\n"
 
             for stage, info in forms_info.items():
+                stages_info[str(stage)]["answers"] += info
                 answers_info.append({"stage": stage, "answers": info})
-
-            decision = session.query(Decision).filter(Decision.stage == candidate.stage,
-                                                      Decision.email == candidate.email).first()
+            
+            decision = session.query(Decision).filter(
+                                                      Decision.email == candidate.email)
             session.commit()
+        for d in decision:
+            if str(d.stage) in stages_info.keys():
+                stages_info[str(d.stage)]["passed"] = d.passed
+        for k in stages_info.keys():
+            if "passed" not in stages_info[k].keys():
+                stages_info[k]["passed"] = False
+        s_info = []
+        for stage, values in stages_info.items():
+            values["stage"] = stage
+            s_info.append(values)
+
         candidate_full = {'name': candidate.first_name + " " + candidate.last_name, 'email': candidate.email,
                           'current_stage': candidate.stage, 'status': candidate.status, 'phone': candidate.phone,
                           'modify': candidate.modify.strftime("%d/%m/%Y, %H:%M:%S"), 'answers': answers_info,
+                          'stages_info': s_info,
                           'grades': grades_info,
                           'missing': missing_forms,
-                          'notes': notes,
-                          'passed': decision.passed if decision else None}
+                          'notes': notes,}
+                          # 'passed': decision.passed if decision else None}
 
         return candidate_full
 

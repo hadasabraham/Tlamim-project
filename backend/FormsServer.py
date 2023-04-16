@@ -3,6 +3,8 @@ from apiclient import discovery
 from httplib2 import Http
 from oauth2client import client, file, tools, clientsecrets
 from dateutil.parser import parse
+import os
+import pathlib
 
 SCOPES = "https://www.googleapis.com/auth/drive"
 DISCOVERY_DOC = "https://forms.googleapis.com/$discovery/rest?version=v1"
@@ -16,7 +18,7 @@ class FormServer(object):
         if store:
             creds = store.get()
         if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets(credentials_path,
+            flow = client.flow_from_clientsecrets(str(pathlib.Path(__file__).parent.resolve()) + os.path.sep + credentials_path,
                                                   SCOPES)
             creds = tools.run_flow(flow, store)
 
