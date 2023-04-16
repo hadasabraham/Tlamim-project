@@ -1,0 +1,9 @@
+.candidate-table {
+        direction: rtl
+}
+.candidate-table .rdt_TableHeadRow {
+        text-align: right;
+        vertical-align: right;
+        font-size: 18px;
+
+}

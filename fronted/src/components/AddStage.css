@@ -1,0 +1,14 @@
+.popup {
+    color:blue;
+    background-color: blue;
+    border-color: black;
+    outline-color: black;
+    width: 200px;
+}
+.modal {
+    color: blue;
+        background-color: blue;
+        border-color: black;
+        outline-color: black;
+        width: 200px;
+}

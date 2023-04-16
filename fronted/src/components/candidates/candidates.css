@@ -1,0 +1,139 @@
+.stage_info {
+    font-size: 20px;
+    text-align: right;
+}
+.candidate_table .rdt_TableHeadRow{
+    text-align: right;
+    vertical-align: right;
+    font-size: 20px;
+    
+}
+
+.candidate_table .rdt_TableBody {
+    vertical-align: right;
+    text-align: right;
+}
+
+.candidate_table .rdt_TableRow {
+    vertical-align: right;
+    text-align: right;
+}
+
+.candidate_table .rdt_TableHead {
+    vertical-align: right;
+    text-align: right;
+}
+
+.candidate_table .rdt_TableHeader {
+    vertical-align: right;
+    text-align: right;
+}
+
+.candidate_table {
+    vertical-align: right;
+    text-align: right;
+    border-radius: 10px;
+    border: 1px solid #e7e7e7;
+    direction: rtl
+}
+
+.checkbox-wrapper input[type="checkbox"]{
+    width: 1.6em;
+        height: 1.6em;
+        border-radius: 0.35em;
+        margin-right: 0.5em;
+}
+
+.stage_qa {
+    text-align: right;
+    width: 200px;
+    padding: 10px;
+    white-space: pre;
+}
+
+.stage_qa .rdt_TableRow{
+    text-align: right;
+    width: 380px;
+    padding: 10px;
+}
+
+.stage_qa .rdt_TableBody {
+    text-align: right;
+    width: 380px;
+    padding: 10px;
+}
+
+.stage_qa .rdt_Table {
+    text-align: right;
+    width: 400px;
+    border: 1px solid #e7e7e7;
+    border-radius: 10px;
+}
+
+.stage_qa .rdt_TableHead {
+    height: 0px;
+    text-align: right;
+    width: 0px;
+    padding: 0px;
+ }
+
+.note-table .rdt_TableHead {
+    height: 0px;
+    text-align: right;
+    width: 0px;
+    padding: 0px;
+}
+
+
+.stage_qa .rdt_TableHeader {
+    width: 100px;
+    text-align: right;
+}
+
+
+.qa_title {
+    text-align: right;
+    margin-right: 300px;
+}
+
+.input {
+    padding: 10px;
+    margin-left: 10px;
+    margin-top: 10px;
+    text-align: right;
+    width: 375px;
+    height: 100px;
+    max-lines: 5;
+}
+
+.commit_holder
+{
+    margin-top: 70px;
+    margin-left: 10px;
+}
+
+.commit {
+
+    /* margin-top: 200px; */
+    height: 30px;
+    width: 50px;
+    text-align: right;
+    /* margin-left: 20px;  */
+} 
+.next_stage {
+    margin-top: 10px;
+    height: 30px;
+    width: 100px;
+    margin-left: 10px;
+}
+
+.allnotes {
+    text-align: right;
+}
+
+.all_nodes .rdt_TableHead {
+    height: 0px;
+    text-align: right;
+    width: 0px;
+    padding: 0px;
+}
