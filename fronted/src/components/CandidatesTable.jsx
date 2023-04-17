@@ -1,5 +1,4 @@
 import React, { useEffect, useState, Component } from "react";
-
 import data_table from "./candidateTables/dataTable";
 import SearchField from "./candidateTables/searchField";
 import Header from './Header';
@@ -87,9 +86,9 @@ export default function CandidatesTable() {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ "snapshot": { "name": value } })
+            body: JSON.stringify({ "export": { "name": value } })
         };
-        await fetch('http://localhost:8001/snapshot', requestOptions);
+        await fetch('http://localhost:8001/export/', requestOptions);
         onExport(); 
     };
 
@@ -109,11 +108,13 @@ export default function CandidatesTable() {
     return (
         <div>
             {Header("מועמדים")}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 10fr 1fr" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr 10fr 3fr 1fr" }}>
                 <div className="but_hoder">
                     <Button className="export" onClick={onExport}>export</Button>
                 </div>
+                <div></div>
                 <SearchField placeholder="Search candidates" onChange={handleSearch} />
+                <div></div>
                 <div className="but_hoder">
                     <Button className="export" onClick={onRefresh}>refresh</Button>
                 </div>

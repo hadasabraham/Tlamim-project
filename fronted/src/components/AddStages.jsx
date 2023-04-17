@@ -5,6 +5,8 @@ import Button from '@mui/joy/Button';
 import Textarea from '@mui/joy/Textarea';
 import Popup from 'reactjs-popup';
 
+import "./AddStage.css"
+
 class StagePopUp extends Component {
     state = {
         name: "",
@@ -138,12 +140,41 @@ export default function AddStages() {
         window.location.href = 'http://localhost:3000';
     }
 
+    const useRows = (row) => {
+        const [id, setId] = useState(NaN);
+        const [link, setLink] = useState(NaN);
+        const handleId = (event) => {
+            setId(event.target.value);
+        };
+        const handleLink = (event) => {
+            setLink(event.target.value);
+        };
+        const onAddLink = (event) => {
+            onFormToggle(row.index, id, link);
+        };
+        if (row.forms == 0) {
+            return (
+                <div style={{ display: "grid", gridTemplateColumns: "3fr 3fr 3fr" }}>
+                    <Textarea type="text" name="name" placeholder={"form id"} onChange={handleId} />
+                    <Textarea type="text" name="name" placeholder={"form link"} onChange={handleLink} />
+                    <Button className="addform" onClick={onAddLink}>הופסה</Button>
+                </div>
+            );
+        }
+        return (
+            <Button className="addform" onClick={() => window.open(row.forms[0]?.link)}> פתח טופס</Button>
+        );
+    }
+
     const columns = [
         {
             name: "מספר השלב", selector: "index", 
         },
         {
             name: "שם השלב", selector: "name", 
+        },
+        {
+            cell: useRows
         }
     ];
 
@@ -151,7 +182,7 @@ export default function AddStages() {
         const [id, setId] = useState(NaN);
         const [link, setLink] = useState(NaN);
         const handleId = (event) => {
-            setId(event.target.value );
+            setId(event.target.value);
         };
         const handleLink = (event) => {
             setLink(event.target.value);
@@ -161,7 +192,7 @@ export default function AddStages() {
         };
         const links = [];
         row.data.forms.forEach((data) => {
-            links.push(<a href={data.link}>{data.link}</a>)
+            links.push(<a className="link" href={data.link}>Open Form</a>)
         })
         if (links == 0)
         {
@@ -187,26 +218,27 @@ export default function AddStages() {
             <DataTable className="candidate-table"
                 columns={columns}
                 data={stage_list}
-                expandableRows
-                expandOnRowClicked
-                expandableRowsComponent={useRowClicked}
+                // expandableRows
+                // expandOnRowClicked
+                // expandableRowsComponent={useRowClicked}
 
             />
-            <Button onClick={onClick}>back</Button>
-            <> </>
-            <Popup className="popup" trigger=
-                {<Button onClick={addStage}>addStage</Button>}
-                position="right center">
-                {
-                    
-                    close => (
-                        <div className="popup">
-                            <StagePopUp toggle={(number, name) => onStageToggle(number, name, close)}></StagePopUp>
-                        </div>
-                    )
-                }
-            </Popup>
-            
+            <div className="buttons"> 
+                <Popup className="popup" trigger=
+                    {<Button onClick={addStage}>הוסף שלב</Button>}
+                    position="left center">
+                    {
+                        
+                        close => (
+                            <div className="popup">
+                                <StagePopUp toggle={(number, name) => onStageToggle(number, name, close)}></StagePopUp>
+                            </div>
+                        )
+                    }
+                </Popup>
+                <> </>
+                <Button onClick={onClick}>חזור</Button>
+            </div>
         </div>
     );
     // <div className='modal'>

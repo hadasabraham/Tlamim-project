@@ -29,6 +29,11 @@ def add_stage(db: Database, param: StageParameter):
 
 
 def add_form(db: Database, server: FormServer, param: FormParameter):
+    if param.stage_index == "0":
+        print("set registration form")
+        set_registration_form(db=db, server=server,
+                              param=RegistrationFormParameter(param.form_id, param.form_link))
+        return
     form = Form(form_id=param.form_id, form_link=param.form_link, stage=param.stage_index)
     form_structure = server.get_form_structure(form_id=param.form_id)
     db.add_form(form=form, form_structure=form_structure)
@@ -36,6 +41,21 @@ def add_form(db: Database, server: FormServer, param: FormParameter):
 
 def search_candidates(db: Database, condition: str) -> list[dict]:
     res = []
+    if condition == 'חסרים':
+        for candidate in db.search_candidates(condition="הכול"):
+            candidate_info = dict()
+            candidate_info['name'] = candidate.first_name + \
+                " " + candidate.last_name
+            candidate_info['email'] = candidate.email
+            candidate_info['stage'] = candidate.stage
+            candidate_info['status'] = candidate.status
+            candidate_info['last_modify'] = candidate.modify.strftime(
+                "%d/%m/%Y, %H:%M:%S")
+            candidate_info['phone'] = candidate.phone
+            candidate_info['missing'] = db.is_missing(candidate.email)
+            if db.is_missing(candidate.email):
+                res.append(candidate_info)
+        return res
     for candidate in db.search_candidates(condition=condition):
         candidate_info = dict()
         candidate_info['name'] = candidate.first_name + " " + candidate.last_name
@@ -44,7 +64,9 @@ def search_candidates(db: Database, condition: str) -> list[dict]:
         candidate_info['status'] = candidate.status
         candidate_info['last_modify'] = candidate.modify.strftime("%d/%m/%Y, %H:%M:%S")
         candidate_info['phone'] = candidate.phone
+        candidate_info['missing'] = db.is_missing(candidate.email)
         res.append(candidate_info)
+    res = sorted(res, key=lambda e: not e['missing'])
     return res
 
 
@@ -71,7 +93,7 @@ def refresh_registration(db: Database, server: FormServer):
             questions = FormDecoder.get_form_questions(form_structure=form_structure)
 
             q_a = FormDecoder.match(form_questions=questions, form_answers=answers)
-            first_name, last_name, stage, modify, phone, status = None, None, 0, datetime.now(), None, "חדש"
+            first_name, last_name, stage, modify, phone, status = None, None, 1, datetime.now(), None, "חדש"
             for q_title, q_ans in q_a:
                 if q_title == "שם פרטי":
                     first_name = q_ans

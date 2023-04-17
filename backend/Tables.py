@@ -474,6 +474,21 @@ class Database(object):
         email = str(form_response['respondentEmail'])
         self.forms_db.add_answer(form_id=form_id, email=email, response=form_response, last_update=timestamp)
 
+    def is_missing(self, email: str) -> bool:
+        candidate = self.get_candidate(email=email)
+        if candidate is None:
+            return False
+        with self.session() as session:
+            forms = session.query(Form).filter(Form.stage)
+            for form in forms:
+                response = self.forms_db.get_candidate_response(
+                    form_id=form.form_id, email=email)
+                if response:
+                    if candidate.stage <= form.stage:
+                        return True
+        return False
+
+
     def get_candidate_info(self, email: str):
         candidate = self.get_candidate(email=email)
         if candidate is None:

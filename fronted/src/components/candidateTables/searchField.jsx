@@ -39,7 +39,7 @@ const searchFieldInputStyle = {
     color: '#5a5a5a',
     fontWeight: 100,
     height: SEARCH_BUTTON_EDGE - 3,
-    width: 570
+    width: 150
 };
 
 const SearchIcon = () => {

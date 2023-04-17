@@ -29,8 +29,14 @@ async def clear(request: Request):
     utils.reset_database(db=db)
 
 
+@serverApp.post("/export/")
+async def export(export: ExportParameter = Body(embed=True)):
+    print("export")
+    db.export_candidates("הכול", export.name)
+
+
 @serverApp.post("/set/status")
-async def set_registration(status_parameter: StatusParameter = Body(embed=True)):
+async def set_status(status_parameter: StatusParameter = Body(embed=True)):
     utils.update_status(db=db, param=status_parameter)
 
 

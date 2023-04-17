@@ -44,6 +44,14 @@ const columns = (onSelect) => {
 ];
 }
 
+const conditionalRowStyles = [
+    {
+        when: row => row.missing,
+        style: {
+            backgroundColor: "#87CEFA",
+        }
+    }
+];
 
 const data_table = (data, onSelect) => {
     return (
@@ -58,6 +66,7 @@ const data_table = (data, onSelect) => {
                 persistTableHead
                 selectableRowsHighlight
                 fixedHeader
+                conditionalRowStyles={conditionalRowStyles}
             />
         </div>
     );
