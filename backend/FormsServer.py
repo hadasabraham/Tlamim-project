@@ -95,7 +95,7 @@ class FormDecoder(object):
         for q_id, q_item in response['answers'].items():
             try:
                 text_answers = q_item['textAnswers']['answers'][0]['value'].strip()
-                if email is not None and q_id == email_qid:
+                if email_qid is not None and q_id == email_qid:
                     email = text_answers
                 else:
                     answers.append((q_id, text_answers))
