@@ -3,3 +3,9 @@ backend/token.json
 backend/credentials.json
 backend/form_credentials.json
 backend/form_token.json
+backend/__pycache__/
+backend/pathParameters/__pycache__/
+backend/.DS_Store
+.DS_Store
+frontend/node_modules/
+frontend/node_models/.*

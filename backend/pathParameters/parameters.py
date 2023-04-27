@@ -1,14 +1,18 @@
+from pydantic.dataclasses import dataclass
+
+@dataclass
 class FormParameter:
     form_id: str
     form_link: str
-    stage_index: int
+    stage_index: str
 
-    def __init__(self, form_id: str, form_link: str, stage_index: int):
+    def __init__(self, form_id: str, form_link: str, stage_index: str):
         self.form_id = form_id
         self.form_link = form_link
         self.stage_index = stage_index
 
 
+@dataclass
 class RegistrationFormParameter:
     form_id: str
     form_link: str
@@ -18,6 +22,7 @@ class RegistrationFormParameter:
         self.form_link = form_link
 
 
+@dataclass
 class StatusParameter:
     email: str
     status: str
@@ -27,17 +32,19 @@ class StatusParameter:
         self.status = status
 
 
+@dataclass
 class StageParameter:
-    index: int
+    index: str
     name: str
     msg: str
 
-    def __init__(self, index: int, name: str, msg: str):
+    def __init__(self, index: str, name: str, msg: str):
         self.index = index
         self.name = name
         self.msg = msg
 
 
+@dataclass
 class GradeParameter:
     stage: int
     email: str
@@ -51,6 +58,7 @@ class GradeParameter:
         self.notes = notes
 
 
+@dataclass
 class DecisionParameter:
     stage: int
     email: str
@@ -61,3 +69,9 @@ class DecisionParameter:
         self.email = email
         self.passed = passed
 
+@dataclass
+class ExportParameter:
+    name: str
+    
+    def __init__(self, name: str):
+        self.name = name
