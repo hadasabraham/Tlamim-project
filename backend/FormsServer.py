@@ -67,20 +67,41 @@ class FormDecoder(object):
         return res
 
     @staticmethod
-    def get_form_answers(response: dict) -> tuple[str, str, list[tuple[str, str]]]:
+    def get_key_qid(form_structure: dict, key_title: str = 'דוא"ל') -> str | None:
+        for item in form_structure['items']:
+            question_title = item['title'].strip()
+            question_item = item['questionItem']
+            question = question_item['question']
+            question_id = question['questionId']
+
+            if question_title == key_title.strip():
+                return question_id
+        return None
+
+    @staticmethod
+    def get_form_answers(response: dict, email_qid: str = None) -> tuple[str, str, list[tuple[str, str]]]:
         """
         Decodes a given form response;
+        :param email_qid: The email question id
         :param response: the form response as received from the google-form api
         :return: (email, timestamp, [(question_id, question_answers) pairs])
         """
         timestamp = response['lastSubmittedTime']
-        email = str(response['respondentEmail'])
+        email = None
+        if email_qid is None:
+            email = str(response['respondentEmail'])
         answers = []
 
         for q_id, q_item in response['answers'].items():
-            if 'textAnswers' in q_item.keys():
+            try:
                 text_answers = q_item['textAnswers']['answers'][0]['value'].strip()
-                answers.append((q_id, text_answers))
+                if email is not None and q_id == email_qid:
+                    email = text_answers
+                else:
+                    answers.append((q_id, text_answers))
+            except Exception as e:
+                print("Got error while retrieving answers")
+                print(e)
 
         return email, timestamp, answers
 

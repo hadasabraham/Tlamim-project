@@ -89,8 +89,9 @@ def refresh_registration(db: Database, server: FormServer):
     if responses:
         candidates = []
         for response in responses['responses']:
-            email, timestamp, answers = FormDecoder.get_form_answers(response=response)
             questions = FormDecoder.get_form_questions(form_structure=form_structure)
+            email_qid = FormDecoder.get_key_qid(form_structure=form_structure)
+            email, timestamp, answers = FormDecoder.get_form_answers(response=response, email_qid=email_qid)
 
             q_a = FormDecoder.match(form_questions=questions, form_answers=answers)
             first_name, last_name, stage, modify, phone, status = None, None, 1, datetime.now(), None, "חדש"
