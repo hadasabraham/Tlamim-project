@@ -137,10 +137,13 @@ def refresh_form(db: Database, server: FormServer, form_id: str):
         last_update = form_info['last_update']
 
     responses = server.get_form_responses(form_id=form_id, last_response=last_update)
+    form_structure = db.get_form_structure_info(form_id=form_id)[
+        'form_structure']
+    email_qid = FormDecoder.get_key_qid(form_structure=form_structure)
     if responses:
         for response in responses['responses']:
             # "last update" updates automatically after each response addition
-            db.add_form_answer(form_id=form_id, form_response=response)
+            db.add_form_answer(form_id=form_id, form_response=response, email_qid=email_qid)
 
 
 def refresh_all_forms(db: Database, server: FormServer):

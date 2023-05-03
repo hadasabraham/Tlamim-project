@@ -6,6 +6,22 @@
     text-align: center;
     font-weight: 500;
 }
+
+.but_header {
+    font-size: 1.5rem;
+    size: "large";
+    width: 200;
+}
+
+.MuiToggleButton-root {
+    font-size: 1.5rem;
+}
+.Mui-selected {
+        font-size: 1.5rem;
+}
+.MuiToggleButtonGroup-root {
+    font-size: 1.5rem;
+}
 .MenuHolder {
     text-align: right;
     background-color: #363640;

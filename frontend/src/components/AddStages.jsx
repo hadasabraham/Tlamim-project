@@ -24,15 +24,11 @@ class StagePopUp extends Component {
     };
     render() {
         return (
-            <div className="modal">
-                <div className="modal_content">
-                    <div style={{ display: "grid", gridTemplateColumns: "3fr 3fr 3fr" }}>
-                        <Textarea type="text" name="name" placeholder={"stage number"} onChange={this.handleNumber} />
-                        <Textarea type="text" name="name" placeholder={"stage name"} onChange={this.handleName} />
-                        <Button className="submit" onClick={this.handleClick}>submit</Button>
-                    </div>
+                <div style={{ display: "grid", gridTemplateColumns: "0fr 3fr 3fr"}}>
+                    <Button className="submit" onClick={this.handleClick}>הוסף</Button>
+                    <Textarea className="textbox" type="text" name="name" placeholder={"שם השלב"} onChange={this.handleName} />
+                    <Textarea className="textbox" type="text" name="name" placeholder={"מספר השלב"} onChange={this.handleNumber} />
                 </div>
-            </div>
         );
     }
 }
@@ -155,9 +151,9 @@ export default function AddStages() {
         if (row.forms == 0) {
             return (
                 <div style={{ display: "grid", gridTemplateColumns: "3fr 3fr 3fr" }}>
-                    <Textarea type="text" name="name" placeholder={"form id"} onChange={handleId} />
-                    <Textarea type="text" name="name" placeholder={"form link"} onChange={handleLink} />
-                    <Button className="addform" onClick={onAddLink}>הופסה</Button>
+                    <Textarea type="textbox" name="name" placeholder={"form id"} onChange={handleId} />
+                    <Textarea type="textbox" name="name" placeholder={"form link"} onChange={handleLink} />
+                    <Button className="addform" onClick={onAddLink}>הוספה</Button>
                 </div>
             );
         }
@@ -224,13 +220,13 @@ export default function AddStages() {
 
             />
             <div className="buttons"> 
-                <Popup className="popup" trigger=
+                <Popup trigger=
                     {<Button onClick={addStage}>הוסף שלב</Button>}
                     position="left center">
                     {
                         
                         close => (
-                            <div className="popup">
+                            <div>
                                 <StagePopUp toggle={(number, name) => onStageToggle(number, name, close)}></StagePopUp>
                             </div>
                         )

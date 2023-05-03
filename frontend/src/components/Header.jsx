@@ -1,7 +1,9 @@
 import React from "react";
-import './Header.css'
 import Button from '@mui/joy/Button';
 import Popup from 'reactjs-popup';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import './Header.css'
 
 
 const onCandidates = () => {
@@ -13,39 +15,68 @@ const onAddStage = () => {
 };
 
 
-const Header = (title) => {
+
+function Header (title) {
+    const [alignment, setAlignment] = React.useState(window.location.pathname);
+
+    const handleChange = (
+        event,
+        newAlignment
+    ) => {
+        setAlignment(newAlignment);
+        if (newAlignment === '/') {
+            onCandidates();
+        }
+        else if (newAlignment === '/addStages'){
+            onAddStage();
+        }
+    };
+
     return (
-        <div style={{ display: "grid", gridTemplateColumns: "8fr 1fr" }}>
+            <ToggleButtonGroup
+                className="but_header"
+                sizeLarge
+                color="primary"
+                value={alignment}
+                exclusive
+                onChange={handleChange}
+                aria-label="label"
+                fullWidth
+            >
+                <ToggleButton size="large" value="/addStages">שלבים</ToggleButton>
+                <ToggleButton size="large" value="/">מועמדים</ToggleButton>
+            </ToggleButtonGroup>    
+    // <div style={{ display: "grid", gridTemplateColumns: "8fr 1fr" }}>
 
-            <div className = "Header" >
-                <a>{title}</a>
-            </div >
+    //     {/* <div className = "Header" >
+    //         <a>{title}</a>
+    //     </div > */}
+        
+    //     {/* <div className="MenuHolder">
+    //         <Popup trigger=
+    //             {<a className="Header" onClick={onCandidates}>|||</a>}
+    //             position="bottom right">
+    //             {
+    //             close => (
+    //                 <div className="Menu">
+    //                     <div>
+    //                         <a onClick={onCandidates}>מועמדים</a>
+
+    //                     </div>
+    //                     <div>
+    //                         --------------
+    //                     </div>
+    //                     <div>
+    //                     <a onClick={onAddStage}>הוספת שלב</a>
+    //                     </div>
+    //                 </div>
+    //             )
+    //         }
+    //         </Popup>
             
-            <div className="MenuHolder">
-                <Popup trigger=
-                    {<a className="Header" onClick={onCandidates}>|||</a>}
-                    position="bottom right">
-                    {
-                    close => (
-                        <div className="Menu">
-                            <div>
-                                <a onClick={onCandidates}>מועמדים</a>
-
-                            </div>
-                            <div>
-                                --------------
-                            </div>
-                            <div>
-                            <a onClick={onAddStage}>הוספת שלב</a>
-                            </div>
-                        </div>
-                    )
-                }
-                </Popup>
-                
-            </div>
-        </div>
-    );
-};
+    //     </div> */}
+    // </div>
+);
+}
 
 export default Header;

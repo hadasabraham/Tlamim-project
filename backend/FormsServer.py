@@ -44,7 +44,8 @@ class FormDecoder(object):
 
     @staticmethod
     def get_questions_answers(response: dict, form_structure: dict):
-        timestamp, email, answers = FormDecoder.get_form_answers(response=response)
+        email_qid = FormDecoder.get_key_qid(form_structure=form_structure)
+        timestamp, email, answers = FormDecoder.get_form_answers(response=response, email_qid=email_qid)
         questions = FormDecoder.get_form_questions(form_structure=form_structure)
         return FormDecoder.match(form_questions=questions, form_answers=answers)
 

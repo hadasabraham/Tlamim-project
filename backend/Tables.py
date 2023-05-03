@@ -462,7 +462,7 @@ class Database(object):
                 self.forms_db.add_form(form_id=form.form_id, form_structure=form_structure)
             session.commit()
 
-    def add_form_answer(self, form_id: str, form_response: dict):
+    def add_form_answer(self, form_id: str, form_response: dict, email_qid: str = None):
         """
         add the answer to the mongodb and update the last_update (the max of the current and the form_response timestamp)
         :param form_id:
@@ -471,7 +471,14 @@ class Database(object):
         """
 
         timestamp = form_response['lastSubmittedTime']
-        email = str(form_response['respondentEmail'])
+        if email_qid is None:
+            email = str(form_response['respondentEmail'])
+        else:
+            for q_id, q_item in form_response['answers'].items():
+                text_answers = q_item['textAnswers']['answers'][0]['value'].strip(
+                )
+                if email_qid is not None and q_id == email_qid:
+                    email = text_answers
         self.forms_db.add_answer(form_id=form_id, email=email, response=form_response, last_update=timestamp)
 
     def is_missing(self, email: str) -> bool:
@@ -584,8 +591,14 @@ class Database(object):
             stages = session.query(Stage).order_by(Stage.index)
 
             for stage in stages:
-                stage_dict = {'index': stage.index, 'name': stage.name, 'msg': stage.msg, 'forms': forms_partition[stage.index]}
-                res.append(stage_dict)
+                if stage.index != 0:
+                    stage_dict = {'index': stage.index, 'name': stage.name, 'msg': stage.msg, 'forms': forms_partition[stage.index]}
+                    res.append(stage_dict)
+                else:
+                    r = self.get_registration_form()
+                    stage_dict = {'index': stage.index, 'name': stage.name,
+                                  'msg': stage.msg, 'forms': [{'link': r["form_link"], 'id': r["form_id"]}]}
+                    res.append(stage_dict)
         return res
 
 
@@ -603,7 +616,7 @@ class Database(object):
 
     @staticmethod
     def _parse_condition(condition):
-        args = condition.split(',')
+        args = condition.split(' ')
         parsed = []
         for pair in args:
             key_value = pair.split('=')

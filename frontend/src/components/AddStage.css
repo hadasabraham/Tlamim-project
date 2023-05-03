@@ -23,3 +23,8 @@
     align-self: right;
     text-align: right;
 }
+
+.textbox {
+    text-align: center;
+    width: 200px;
+}

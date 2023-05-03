@@ -110,13 +110,13 @@ export default function CandidatesTable() {
             {Header("מועמדים")}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr 10fr 3fr 1fr" }}>
                 <div className="but_hoder">
-                    <Button className="export" onClick={onExport}>export</Button>
+                    <Button className="export" onClick={onExport}>יצא</Button>
                 </div>
                 <div></div>
                 <SearchField placeholder="Search candidates" onChange={handleSearch} />
                 <div></div>
                 <div className="but_hoder">
-                    <Button className="export" onClick={onRefresh}>refresh</Button>
+                    <Button className="export" onClick={onRefresh}>רענן</Button>
                 </div>
             </div>
             {state ? <PopUp toggle={onToggle} /> : null}
