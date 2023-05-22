@@ -75,7 +75,7 @@ class FormDecoder(object):
             question = question_item['question']
             question_id = question['questionId']
 
-            if question_title == key_title.strip():
+            if "דוא" in question_title:# == key_title.strip():
                 return question_id
         return None
 

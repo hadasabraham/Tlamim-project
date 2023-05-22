@@ -596,8 +596,12 @@ class Database(object):
                     res.append(stage_dict)
                 else:
                     r = self.get_registration_form()
-                    stage_dict = {'index': stage.index, 'name': stage.name,
-                                  'msg': stage.msg, 'forms': [{'link': r["form_link"], 'id': r["form_id"]}]}
+                    if r is None:
+                        stage_dict = {'index': stage.index, 'name': stage.name,
+                                      'msg': stage.msg, 'forms': []}
+                    else:
+                        stage_dict = {'index': stage.index, 'name': stage.name,
+                                    'msg': stage.msg, 'forms': [{'link': r["form_link"], 'id': r["form_id"]}]}
                     res.append(stage_dict)
         return res
 

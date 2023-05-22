@@ -96,7 +96,7 @@ def refresh_registration(db: Database, server: FormServer):
             q_a = FormDecoder.match(form_questions=questions, form_answers=answers)
             first_name, last_name, stage, modify, phone, status = None, None, 1, datetime.now(), None, "חדש"
             for q_title, q_ans in q_a:
-                if q_title == "שם פרטי":
+                if q_title == "שם פרטי" or q_title == "שם  פרטי":
                     first_name = q_ans
                 elif q_title == "שם משפחה":
                     last_name = q_ans
