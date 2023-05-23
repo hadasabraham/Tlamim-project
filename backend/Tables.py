@@ -347,14 +347,21 @@ class Database(object):
             return res
         if condition == 'הכול':
             with self.session() as session:
+                sql_conditions = []
+                sql_conditions.append(Candidate.status.not_like(fr"הוסר"))
                 res = session.query(Candidate).filter(
-                    Database._concat_condition_and(conditions=[True])).order_by(Candidate.modify)
+                    Database._concat_condition_and(conditions=sql_conditions)).order_by(Candidate.modify)
             return res
         parsed, succeed = Database._parse_condition(condition=condition)
+        print(parsed)
+
         if not succeed:
             return []
         else:
             sql_conditions = []
+            print([x[0] for x in parsed])
+            if 'סטטוס' not in [x[0] for x in parsed]:
+                sql_conditions.append(Candidate.status.not_like(fr"הוסר"))
             if parsed:
                 for key, value in parsed:
                     if key == 'אימייל':
@@ -371,7 +378,6 @@ class Database(object):
                         sql_conditions.append(Candidate.stage == value)
                     elif key == 'תאריך':
                         sql_conditions.append(Candidate.modify == value)
-
             with self.session() as session:
                 res = session.query(Candidate).filter(
                     Database._concat_condition_and(conditions=sql_conditions)).order_by(Candidate.modify)

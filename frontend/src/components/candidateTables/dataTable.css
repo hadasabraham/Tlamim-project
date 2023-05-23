@@ -1,5 +1,7 @@
 .candidate-table {
-        direction: rtl
+        direction: rtl;
+        height: 100%;
+        max-height: 100vh;
 }
 .candidate-table .rdt_TableHeadRow {
         text-align: right;

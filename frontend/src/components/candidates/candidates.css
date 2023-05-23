@@ -137,3 +137,10 @@
     width: 0px;
     padding: 0px;
 }
+
+.buttons {
+    align-content: right;
+    align-items: right;
+    align-self: right;
+    text-align: right;
+}

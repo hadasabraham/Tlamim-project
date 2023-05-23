@@ -188,13 +188,25 @@ const onClick = () => {
     window.location.href = 'http://localhost:3000';
 }
 
+const removeCandidate = async (data) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ "status_parameter": { "email": data.email, "status": "הוסר" } })
+    };
+    await fetch('http://localhost:8001/set/status', requestOptions);
+}
+
 const _candidate = (data, onSelect, onNextLevel, fetchTodos) => {
     return (
         <div className="candidate">
             {Header(data.email + ' - ' + data.name)}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
                 <h1 className='stage_info'>סטטוס : {status(data.status)}</h1>
                 <h1 className='stage_info'>שלב : {data.current_stage}</h1>
+                <h1 className='stage_info'>שם : {data.name}</h1>
+                <h1 className='stage_info'>{data.email} : דוא״ל</h1>
+
             </div>
             <DataTable className='candidate_table'
                 columns={columns(onSelect, data.email, fetchTodos)}
@@ -212,8 +224,10 @@ const _candidate = (data, onSelect, onNextLevel, fetchTodos) => {
                     }
                 }}
             />
-            <div className="">
-                <Button onClick={onClick}>back</Button>
+            <div className="buttons">
+                <Button onClick={() => removeCandidate(data)}>הסר מועמד</Button>
+                <>  </>
+                <Button onClick={onClick}>חזור</Button>
             </div>
         </div>
     );

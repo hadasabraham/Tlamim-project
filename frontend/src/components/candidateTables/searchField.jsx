@@ -159,7 +159,7 @@ const SearchField = ({
     };
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedKeyword, setSelectedKeyword] = useState("");
-    const [keywords, setKeywords] = useState(["אימייל", "שם", "שלב", "סטטוס", "תאריך", "טלפון", "חסרים"]);
+    const [keywords, setKeywords] = useState(["אימייל", "שם", "שלב", "סטטוס", "תאריך", "טלפון", "ממתינים לטיפול", "מועמדים שהוסרו"]);
     const [isHidden, setIsHidden] = useState(true)
     const style_inp = () =>{
         if (isHidden) return "hidden";
@@ -184,7 +184,7 @@ const SearchField = ({
     const handleSelectChange = (event) => {
         setSelectedKeyword(event.target.value);
         const tmp_val = event.target.value;
-        if (event.target.value !== "חסרים")
+        if (event.target.value !== "ממתינים לטיפול" && event.target.value !== "מועמדים שהוסרו")
         {
             setIsHidden(false);
             return;
@@ -193,13 +193,28 @@ const SearchField = ({
         setValue("");
         if (searchTerm != 0)
         {
-            setSearchTerm(`${searchTerm} ${tmp_val}`.trim());
-            onChange(`${searchTerm} ${tmp_val}`.trim());
+            if (event.target.value === "ממתינים לטיפול")
+            {
+                setSearchTerm(`${searchTerm} ${"חסרים"}`.trim());
+                onChange(`${searchTerm} ${"חסרים"}`.trim());
+            }
+            else
+            {
+                setSearchTerm(`${searchTerm} ${"סטטוס=הוסר"}`.trim());
+                onChange(`${searchTerm} ${"סטטוס=הוסר"}`.trim());
+            }
+
         }
         else
         {
-            setSearchTerm(`${tmp_val}`.trim());
-            onChange(`${tmp_val}`.trim());
+            if (event.target.value === "ממתינים לטיפול") {
+                setSearchTerm(`${"חסרים"}`.trim());
+                onChange(`${"חסרים"}`.trim());
+            }
+            else {
+                setSearchTerm(`${"סטטוס=הוסר"}`.trim());
+                onChange(`${"סטטוס=הוסר"}`.trim());
+            }
         }
     };
 
@@ -255,8 +270,8 @@ const SearchField = ({
                     <div key={index} className="pill-container">
                         <input className='pill' 
                         disabled={true}
-                        style={{ width: `${term.length+2}ch`}}
-                        type="text" value={term} 
+                        style={{ width: `${(term === "חסרים" ? "ממתינים לטיפול" : term).length+2}ch`}}
+                        type="text" value={term === "חסרים" ? "ממתינים לטיפול" : term} 
                             onChange={(event) => handleInpChange(term, event.target.value)}/>
                         {
                         // keywords.includes(term.toLowerCase()) && 

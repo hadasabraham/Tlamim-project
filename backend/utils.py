@@ -66,7 +66,7 @@ def search_candidates(db: Database, condition: str) -> list[dict]:
         candidate_info['phone'] = candidate.phone
         candidate_info['missing'] = db.is_missing(candidate.email)
         res.append(candidate_info)
-    res = sorted(res, key=lambda e: not e['missing'])
+    res = sorted(sorted(res, key=lambda e: e['name']), key=lambda e: (not e['missing']))
     return res
 
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import DataTable from 'react-data-table-component';
-
+import Textarea from '@mui/joy/Textarea';
+import CreatableSelect from 'react-select/creatable';
 
 import "./dataTable.css";
 
@@ -9,7 +10,11 @@ const rowClicked = (row, e) => {
 };
 
 
-
+const select_options = [
+    { value: "ממתין לטופס", label: "ממתין לטופס" },
+    { value: "להתקשר", label: "להתקשר" },
+    { value: "חסר התייחסות", label:  "חסר התייחסות" },
+];
 
 
 const columns = (onSelect) => {
@@ -27,11 +32,16 @@ const columns = (onSelect) => {
         name: 'סטטוס', selector: 'status', sortable: true, 
         cell: row => (
             <div>
-                <select value={row.status} onChange={(event) => {onSelect(row.email, event)}}>
-                    <option value="אין">אין</option>
-                    <option value="בתהליך">בתהליך</option>
-                    <option value="סיים שלב">סיום שלב</option>
-                </select>
+                {/* <CreatableSelect isClearable defaultInputValue={row.status} 
+                options={select_options} onInputChange={(event) => { onSelect(row.email, event) }} 
+                onChange={(event) => { onSelect(row.email, event) }}></CreatableSelect> */}
+                <Textarea type="text" name="name" value={row.status} onChange={(event) => { onSelect(row.email, event) }} />
+                {/* <select value={row.status} onChange={(event) => {onSelect(row.email, event)}}>
+                    <option value=""></option>
+                    <option value="ממתין לטופס">ממתין לטופס</option>
+                    <option value="להתקשר">להתקשר</option>
+                    <option value="חסר התייחסות">חסר התייחסות</option>
+                </select> */}
             </div>
         )
     },
@@ -53,13 +63,18 @@ const conditionalRowStyles = [
     }
 ];
 
+
+const minimumRows = 0;
+
 const data_table = (data, onSelect) => {
+    const emptyRows = []; //Array(minimumRows - data.length).fill({});
     return (
         <div className="candidate-table">
             <DataTable
+                className='table'
                 columns={columns(onSelect)}
-                data={data}
-                pagination
+                data={[...data,...emptyRows]}
+                // pagination
                 highliightOnHover
                 selectableRows
                 onRowClicked={rowClicked}
