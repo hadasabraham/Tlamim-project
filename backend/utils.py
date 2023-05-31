@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from FormsServer import FormServer, FormDecoder
-from EmailServer import EmailServer
 from Tables import Database, Candidate, Stage, Form, Grade, Decision
-from pathParameters.parameters import StageParameter, FormParameter, RegistrationFormParameter, StatusParameter, GradeParameter, DecisionParameter
+from pathParameters.parameters import StageParameter, FormParameter, \
+    RegistrationFormParameter, StatusParameter, GradeParameter, DecisionParameter, GeneralNotesParameter
 
 
 def reset_database(db: Database):
@@ -21,6 +21,7 @@ def set_decision(db: Database, param: DecisionParameter):
 def add_grade(db: Database, param: GradeParameter):
     grade = Grade(stage=param.stage, email=param.email, notes=param.notes, score=param.score)
     db.add_grade(grade=grade)
+    db.update_average(email=param.email)  # after updating the grades of a candidate recalculate its average score
 
 
 def add_stage(db: Database, param: StageParameter):
@@ -44,8 +45,7 @@ def search_candidates(db: Database, condition: str) -> list[dict]:
     if condition == 'חסרים':
         for candidate in db.search_candidates(condition="הכול"):
             candidate_info = dict()
-            candidate_info['name'] = candidate.first_name + \
-                " " + candidate.last_name
+            candidate_info['name'] = candidate.first_name + " " + candidate.last_name
             candidate_info['email'] = candidate.email
             candidate_info['stage'] = candidate.stage
             candidate_info['status'] = candidate.status
@@ -53,6 +53,8 @@ def search_candidates(db: Database, condition: str) -> list[dict]:
                 "%d/%m/%Y, %H:%M:%S")
             candidate_info['phone'] = candidate.phone
             candidate_info['missing'] = db.is_missing(candidate.email)
+            candidate_info['general_notes'] = candidate.general_notes
+            candidate['average_grade'] = candidate.average_grade
             if db.is_missing(candidate.email):
                 res.append(candidate_info)
         return res
@@ -65,6 +67,8 @@ def search_candidates(db: Database, condition: str) -> list[dict]:
         candidate_info['last_modify'] = candidate.modify.strftime("%d/%m/%Y, %H:%M:%S")
         candidate_info['phone'] = candidate.phone
         candidate_info['missing'] = db.is_missing(candidate.email)
+        candidate_info['general_notes'] = candidate.general_notes
+        candidate['average_grade'] = candidate.average_grade
         res.append(candidate_info)
     res = sorted(sorted(res, key=lambda e: e['name']), key=lambda e: (not e['missing']))
     return res
@@ -165,6 +169,10 @@ def set_registration_form(db: Database, server: FormServer, param: RegistrationF
 
 def update_status(db: Database, param: StatusParameter):
     db.update_status(email=param.email, status=param.status)
+
+
+def update_general_notes(db: Database, param: GeneralNotesParameter):
+    db.update_general_notes(email=param.email, general_notes=param.notes)
 
 
 def get_stages_info(db: Database):

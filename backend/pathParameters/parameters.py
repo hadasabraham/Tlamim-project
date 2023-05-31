@@ -1,5 +1,6 @@
 from pydantic.dataclasses import dataclass
 
+
 @dataclass
 class FormParameter:
     form_id: str
@@ -30,6 +31,16 @@ class StatusParameter:
     def __init__(self, email: str, status: str):
         self.email = email
         self.status = status
+
+
+@dataclass
+class GeneralNotesParameter:
+    email: str
+    notes: str
+
+    def __init__(self, email: str, notes: str):
+        self.email = email
+        self.notes = notes
 
 
 @dataclass
@@ -69,9 +80,10 @@ class DecisionParameter:
         self.email = email
         self.passed = passed
 
+
 @dataclass
 class ExportParameter:
     name: str
-    
+
     def __init__(self, name: str):
         self.name = name

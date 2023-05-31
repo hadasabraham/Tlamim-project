@@ -3,16 +3,15 @@ from collections import defaultdict
 from datetime import datetime
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, create_engine, MetaData, Table, Text, ForeignKey, \
-    PrimaryKeyConstraint, Boolean
+    PrimaryKeyConstraint, Boolean, Float, func
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import event
 from sqlalchemy import and_
 from sqlalchemy import delete
 import pymongo
 
-from FormsServer import FormServer, FormDecoder
+from FormsServer import FormDecoder
 
 Base = declarative_base()
 
@@ -41,9 +40,11 @@ class Candidate(Base):
     modify: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     phone: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     status: Mapped[str] = mapped_column(String, nullable=True)
+    general_notes: Mapped[str] = mapped_column(String, nullable=True)
+    average_grade: Mapped[float] = mapped_column(Float, nullable=True)
 
     def __repr__(self):
-        return fr"Candidate('{self.email}', '{self.first_name}', '{self.last_name}', {self.stage}, {self.modify}, '{self.phone}', '{self.status}')"
+        return fr"Candidate('{self.email}', '{self.first_name}', '{self.last_name}', {self.stage}, {self.modify}, '{self.phone}', '{self.status}', '{self.general_notes}', {self.average_grade})"
 
     def __eq__(self, other):
         assert type(other) is Candidate and self.email == other.email
@@ -214,7 +215,9 @@ class Database(object):
                                        nullable=False),
                                 Column('modify', DateTime, nullable=False),
                                 Column('phone', String, nullable=False, unique=True),
-                                Column('status', String, nullable=True)
+                                Column('status', String, nullable=True),
+                                Column('general_notes', String, nullable=True),
+                                Column('average_grade', Float, nullable=True)
                                 )
 
         self.forms = Table('forms', self.meta,
@@ -319,6 +322,17 @@ class Database(object):
             )
             session.commit()
 
+
+    def update_general_notes(self, email: str, general_notes: str):
+        with self.session() as session:
+            session.query(Candidate).filter(Candidate.email == email).update(
+                {
+                    'general_notes': general_notes,
+                    'modify': datetime.now()
+                }
+            )
+            session.commit()
+
     def advance_candidate(self, email):
         next_index = self.get_next_stage(email=email)
         if next_index:
@@ -347,8 +361,7 @@ class Database(object):
             return res
         if condition == 'הכול':
             with self.session() as session:
-                sql_conditions = []
-                sql_conditions.append(Candidate.status.not_like(fr"הוסר"))
+                sql_conditions = [Candidate.status.not_like(fr"הוסר")]
                 res = session.query(Candidate).filter(
                     Database._concat_condition_and(conditions=sql_conditions)).order_by(Candidate.modify)
             return res
@@ -370,6 +383,8 @@ class Database(object):
                         sql_conditions.append(Candidate.status.like(fr"{value}%"))
                     elif key == 'טלפון':
                         sql_conditions.append(Candidate.phone.like(fr"{value}%"))
+                    elif key == 'הערות כלליות':
+                        sql_conditions.append(Candidate.general_notes.like(fr"{value}%"))
                     elif key == 'שם':
                         sql_conditions.append(
                             Candidate.first_name.concat(" ").concat(Candidate.last_name).like(fr"{value}%")
@@ -468,15 +483,17 @@ class Database(object):
                 self.forms_db.add_form(form_id=form.form_id, form_structure=form_structure)
             session.commit()
 
-    def add_form_answer(self, form_id: str, form_response: dict, email_qid: str = None):
+    def add_form_answer(self, form_id: str, form_response: dict, email_qid: str | None = None):
         """
         add the answer to the mongodb and update the last_update (the max of the current and the form_response timestamp)
+        :param email_qid:
         :param form_id:
         :param form_response:
         :return:
         """
 
         timestamp = form_response['lastSubmittedTime']
+        email = None
         if email_qid is None:
             email = str(form_response['respondentEmail'])
         else:
@@ -485,7 +502,8 @@ class Database(object):
                 )
                 if email_qid is not None and q_id == email_qid:
                     email = text_answers
-        self.forms_db.add_answer(form_id=form_id, email=email, response=form_response, last_update=timestamp)
+        if email:
+            self.forms_db.add_answer(form_id=form_id, email=email, response=form_response, last_update=timestamp)
 
     def is_missing(self, email: str) -> bool:
         candidate = self.get_candidate(email=email)
@@ -500,7 +518,6 @@ class Database(object):
                     if candidate.stage <= form.stage:
                         return True
         return False
-
 
     def get_candidate_info(self, email: str):
         candidate = self.get_candidate(email=email)
@@ -526,14 +543,14 @@ class Database(object):
                     for q, a in q_a:
                         forms_info[form.stage].append({'question': q, 'answer': a})
                 else:
-                    #stages_info[str(form.stage)]['missing'] += [{'form_id': form.form_id, 'form_link': form.form_link}]
+                    # stages_info[str(form.stage)]['missing'] += [{'form_id': form.form_id, 'form_link': form.form_link}]
                     missing = {'stage': form.stage, 'form_id': form.form_id, 'form_link': form.form_link}
                     missing_forms.append(missing)
 
             for stage in forms_info.keys():
                 stages_info[str(stage)] = {
                     'answers': [], 'grade': "", 'note': "", 'missing': []}
-                
+
             grades = session.query(Grade).filter(
                 Grade.email == candidate.email, Grade.stage <= candidate.stage).all()
             for grade in grades:
@@ -546,9 +563,9 @@ class Database(object):
             for stage, info in forms_info.items():
                 stages_info[str(stage)]["answers"] += info
                 answers_info.append({"stage": stage, "answers": info})
-            
+
             decision = session.query(Decision).filter(
-                                                      Decision.email == candidate.email)
+                Decision.email == candidate.email)
             session.commit()
         for d in decision:
             if str(d.stage) in stages_info.keys():
@@ -567,8 +584,8 @@ class Database(object):
                           'stages_info': s_info,
                           'grades': grades_info,
                           'missing': missing_forms,
-                          'notes': notes,}
-                          # 'passed': decision.passed if decision else None}
+                          'notes': notes, }
+        # 'passed': decision.passed if decision else None
 
         return candidate_full
 
@@ -598,7 +615,8 @@ class Database(object):
 
             for stage in stages:
                 if stage.index != 0:
-                    stage_dict = {'index': stage.index, 'name': stage.name, 'msg': stage.msg, 'forms': forms_partition[stage.index]}
+                    stage_dict = {'index': stage.index, 'name': stage.name, 'msg': stage.msg,
+                                  'forms': forms_partition[stage.index]}
                     res.append(stage_dict)
                 else:
                     r = self.get_registration_form()
@@ -607,11 +625,20 @@ class Database(object):
                                       'msg': stage.msg, 'forms': []}
                     else:
                         stage_dict = {'index': stage.index, 'name': stage.name,
-                                    'msg': stage.msg, 'forms': [{'link': r["form_link"], 'id': r["form_id"]}]}
+                                      'msg': stage.msg, 'forms': [{'link': r["form_link"], 'id': r["form_id"]}]}
                     res.append(stage_dict)
         return res
 
-
+    def update_average(self, email):
+        with self.session() as session:
+            avg = session.query(func.avg(Grade.score).label('average')).filter(Grade.email == email).scalar()
+            session.query(Candidate).filter(Candidate.email == email).update(
+                {
+                    'average_grade': avg,
+                    'modify': datetime.now()
+                }
+            )
+            session.commit()
 
     @staticmethod
     def _fk_pragma_on_connect(dbapi_con, con_record):
