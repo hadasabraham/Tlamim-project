@@ -14,6 +14,8 @@ def main():
 
     server = FormServer(token_path="form_token.json", credentials_path="form_credentials.json")
     db = Database()
+    reset_database(db=db)
+    exit()
     set_registration_form(db=db, server=server, param=RegistrationFormParameter(form_id=form_id, form_link=form_link))
 
     try:

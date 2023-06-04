@@ -84,6 +84,8 @@ class DecisionParameter:
 @dataclass
 class ExportParameter:
     name: str
+    condition: str
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, condition: str):
         self.name = name
+        self.condition = condition

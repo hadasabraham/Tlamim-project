@@ -17,7 +17,7 @@ const select_options = [
 ];
 
 
-const columns = (onSelect) => {
+const columns = (onStatusChange, onGeneralNotesChange) => {
     return [
     {
         name: 'אימייל', selector: 'email', sortable: true,
@@ -29,28 +29,42 @@ const columns = (onSelect) => {
         name: 'שלב', selector: 'stage', sortable: true 
     },
     {
+        name: 'טלפון', selector: 'phone', sortable: true
+    },
+    {
         name: 'סטטוס', selector: 'status', sortable: true, 
         cell: row => (
             <div>
                 {/* <CreatableSelect isClearable defaultInputValue={row.status} 
                 options={select_options} onInputChange={(event) => { onSelect(row.email, event) }} 
                 onChange={(event) => { onSelect(row.email, event) }}></CreatableSelect> */}
-                <Textarea type="text" name="name" value={row.status} onChange={(event) => { onSelect(row.email, event) }} />
-                {/* <select value={row.status} onChange={(event) => {onSelect(row.email, event)}}>
+                {/* <Textarea type="text" name="name" value={row.status} 
+                onChange={(event) => { onStatusChange(row.email, event) }} /> */}
+                <select value={row.status} onChange={(event) => { onStatusChange(row.email, event)}}>
                     <option value=""></option>
                     <option value="ממתין לטופס">ממתין לטופס</option>
                     <option value="להתקשר">להתקשר</option>
                     <option value="חסר התייחסות">חסר התייחסות</option>
-                </select> */}
+                    <option value="הוסר">הוסר</option>
+
+                </select>
+            </div>
+        )
+    },
+
+    {
+        name: 'הערות', selector: 'general_notes', sortable: true,
+        cell: row => (
+            <div>
+                <Textarea type="text" name="name" value={row.general_notes} 
+                onChange={(event) => { onGeneralNotesChange(row.email, event) }} />
             </div>
         )
     },
     {
-        name: 'שינוי אחרון', selector: 'last_modify', sortable: true
+        name: 'ציון', selector: 'average_grade', sortable: true
     },
-    {
-        name: 'טלפון', selector: 'phone', sortable: true
-    }
+
 ];
 }
 
@@ -66,13 +80,13 @@ const conditionalRowStyles = [
 
 const minimumRows = 0;
 
-const data_table = (data, onSelect) => {
+const data_table = (data, onStatusChange, onGeneralNotesChange) => {
     const emptyRows = []; //Array(minimumRows - data.length).fill({});
     return (
         <div className="candidate-table">
             <DataTable
                 className='table'
-                columns={columns(onSelect)}
+                columns={columns(onStatusChange, onGeneralNotesChange)}
                 data={[...data,...emptyRows]}
                 // pagination
                 highliightOnHover

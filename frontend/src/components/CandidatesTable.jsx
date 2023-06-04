@@ -40,6 +40,7 @@ class PopUp extends Component
 
 export default function CandidatesTable() {
     const [candidates_list, setCandidateList] = useState([])
+    const [cond, setCond] = useState("הכול")
     const fetchTodos = async (value) => {
         const response = await fetch("http://localhost:8001/candidates/search/" + value)
         const data = await response.json()
@@ -54,22 +55,38 @@ export default function CandidatesTable() {
     const handleSearch = (value) => {
         if (value === "")
         {
+            setCond("הכול")
             fetchTodos("הכול")
         }
         else
         {
+            setCond(value)
             fetchTodos(value) 
         }
     }
+    const refresh = () =>
+    {
+        fetchTodos(cond) 
+    }
 
-    const onSelect = async (email, event) => {
+    const onStatusChange = async (email, event) => {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ "status_parameter": { "email": email, "status": event.target.value } })
         };
         await fetch('http://localhost:8001/set/status', requestOptions);
-        fetchTodos("הכול"); 
+        refresh(); 
+    };
+
+    const onGeneralNotesChange = async (email, event) => {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ "notes_parameter": { "email": email, "notes": event.target.value } })
+        };
+        await fetch('http://localhost:8001/set/general_notes', requestOptions);
+        refresh();
     };
 
     const onExport = () => {
@@ -86,7 +103,7 @@ export default function CandidatesTable() {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ "export": { "name": value } })
+            body: JSON.stringify({ "export": { "name": value, "condition": cond } })
         };
         await fetch('http://localhost:8001/export/', requestOptions);
         onExport(); 
@@ -103,7 +120,7 @@ export default function CandidatesTable() {
     };
 
     useEffect(() => {
-        fetchTodos("הכול")
+        refresh();
     }, [])
     return (
         <div>
@@ -120,7 +137,7 @@ export default function CandidatesTable() {
                 </div>
             </div>
             {state ? <PopUp toggle={onToggle} /> : null}
-            {data_table(candidates_list, onSelect)}
+            {data_table(candidates_list, onStatusChange, onGeneralNotesChange)}
         </div>
     )
 }

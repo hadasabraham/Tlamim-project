@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import and_
 from sqlalchemy import delete
 import pymongo
+import pandas as pd
 
 from FormsServer import FormDecoder
 
@@ -594,10 +595,26 @@ class Database(object):
         table = []
         for candidate in candidates:
             info = self.get_candidate_info(email=candidate.email)
-            table.append(info)
+            data = {}
+            for key in info.keys():
+                if key not in ["answers", "stages_info", "grades", "missing"]:
+                    data[key] = info[key]
+            for grade in info["grades"]:
+                data["stage " + str(grade["stage"]) + " - grade"] = grade["score"]
+                data["stage " + str(grade["stage"]) +
+                     " - notes"] = grade["notes"]
+            for answers in info["answers"]:
+                if answers:
+                    stage = "stage " + str(answers["stage"])
+                    for ans in answers["answers"]:
+                        data[stage + " - " +ans["question"]] = ans["answer"]
 
-        with open(path, "w") as copy:
-            json.dump(table, copy)
+            # if info["notes"]:
+            #     for stage, note in info["notes"][0].items():
+            #         data["stage " + str(stage)] = note
+            table.append(data)
+        pd.DataFrame(table).to_excel(path+".xlsx")
+            # json.dump(table, copy)
 
     def get_form_structure_info(self, form_id: str):
         return self.forms_db.get_form_structure_info(form_id=form_id)
