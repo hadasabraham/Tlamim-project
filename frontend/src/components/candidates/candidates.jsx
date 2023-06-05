@@ -6,12 +6,17 @@ import Button from '@mui/joy/Button';
 
 //import TcpSocket from 'react-native-tcp-socket';
 import './candidates.css';
+import PopupButton from '../PopUp';
 
 
 const Checkbox = (passed, email, stage, fetchTodos) => {
     const [isChecked, setIsChecked] = useState(passed);
     const onChange = async () => {
         if (passed === false) {
+            const confirmation = window.confirm("האם לקדם מועמד זה שלב?");
+            if (!confirmation) {
+                return;
+            }
             setIsChecked(true);
         
             const passed = true;
@@ -27,6 +32,7 @@ const Checkbox = (passed, email, stage, fetchTodos) => {
                     }
                 })
             };
+
             await fetch('http://localhost:8001/set/decision', requestOptions);
             fetchTodos();
         }
@@ -189,6 +195,10 @@ const onClick = () => {
 }
 
 const removeCandidate = async (data) => {
+    const confirmation = window.confirm("האם ברצונך להסיר מועמד זה?");
+    if (!confirmation) {
+        return;
+    }
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,10 +207,22 @@ const removeCandidate = async (data) => {
     await fetch('http://localhost:8001/set/status', requestOptions);
 }
 
+const buttons = (data) => {
+    return (
+        <div>
+            <Button onClick={() => removeCandidate(data)}>הסר מועמד</Button>
+            <> </>
+            <Button onClick={onClick}>חזור</Button>
+        </div>
+    );
+};
+
+
+
 const _candidate = (data, onSelect, onNextLevel, fetchTodos) => {
     return (
         <div className="candidate">
-            {Header(data.email + ' - ' + data.name)}
+            {Header(data.email + ' - ' + data.name, ()=>buttons(data))}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
                 <h1 className='stage_info'>סטטוס : {status(data.status)}</h1>
                 <h1 className='stage_info'>שלב : {data.current_stage}</h1>
@@ -224,11 +246,11 @@ const _candidate = (data, onSelect, onNextLevel, fetchTodos) => {
                     }
                 }}
             />
-            <div className="buttons">
+            {/* <div className="buttons">
                 <Button onClick={() => removeCandidate(data)}>הסר מועמד</Button>
                 <>  </>
                 <Button onClick={onClick}>חזור</Button>
-            </div>
+            </div> */}
         </div>
     );
     /*

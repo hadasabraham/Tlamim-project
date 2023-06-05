@@ -16,7 +16,7 @@ const onAddStage = () => {
 
 
 
-function Header (title) {
+function Header (title, buttons) {
     const [alignment, setAlignment] = React.useState(window.location.pathname);
 
     const handleChange = (
@@ -33,21 +33,27 @@ function Header (title) {
     };
 
     return (
-            <ToggleButtonGroup
-                className="but_header"
-                sizeLarge
-                color="primary"
-                value={alignment}
-                exclusive
-                onChange={handleChange}
-                aria-label="label"
-                fullWidth
-            >
-                <ToggleButton size="large" value="/addStages">שלבים</ToggleButton>
-                <ToggleButton size="large" value="/">מועמדים</ToggleButton>
-            </ToggleButtonGroup>    
+            // <ToggleButtonGroup
+            //     className="but_header"
+            //     sizeLarge
+            //     color="primary"
+            //     value={alignment}
+            //     exclusive
+            //     onChange={handleChange}
+            //     aria-label="label"
+            //     fullWidth
+            // >
+            //     <ToggleButton size="large" value="/addStages">שלבים</ToggleButton>
+            //     <ToggleButton size="large" value="/">מועמדים</ToggleButton>
+            // </ToggleButtonGroup>    
+        <header className="title-header">
+            
+            <h1 className="title">{title}</h1>
+            {buttons()}
+            
+        </header>
     // <div style={{ display: "grid", gridTemplateColumns: "8fr 1fr" }}>
-
+        
     //     {/* <div className = "Header" >
     //         <a>{title}</a>
     //     </div > */}
