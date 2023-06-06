@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import TypeChecker from 'typeco';
-import TextField from '@mui/material/TextField';
 import Button from '@mui/joy/Button';
 import "./searchField.css";
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -9,8 +8,9 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import ListItemText from '@mui/material/ListItemText';
-import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import Select from '@mui/base/Select';
+import PopupMenu from '../Menu'
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -181,10 +181,10 @@ const SearchField = ({
         setValue("");
     };
 
-    const handleSelectChange = (event) => {
-        setSelectedKeyword(event.target.value);
-        const tmp_val = event.target.value;
-        if (event.target.value !== "ממתינים לטיפול" && event.target.value !== "מועמדים שהוסרו")
+    const handleSelectChange = (value) => {
+        setSelectedKeyword(value);
+        const tmp_val = value;
+        if (value !== "ממתינים לטיפול" && value !== "מועמדים שהוסרו")
         {
             setIsHidden(false);
             return;
@@ -193,7 +193,7 @@ const SearchField = ({
         setValue("");
         if (searchTerm != 0)
         {
-            if (event.target.value === "ממתינים לטיפול")
+            if (value === "ממתינים לטיפול")
             {
                 setSearchTerm(`${searchTerm} ${"חסרים"}`.trim());
                 onChange(`${searchTerm} ${"חסרים"}`.trim());
@@ -207,7 +207,7 @@ const SearchField = ({
         }
         else
         {
-            if (event.target.value === "ממתינים לטיפול") {
+            if (value === "ממתינים לטיפול") {
                 setSearchTerm(`${"חסרים"}`.trim());
                 onChange(`${"חסרים"}`.trim());
             }
@@ -237,9 +237,6 @@ const SearchField = ({
                 <button onClick={handleSearch} className="green-button">
                     הוסף
                 </button>
-                // <button className="search-button" onClick={handleSearch} color='green'>
-                //     הוסף
-                // </button>
                 }
                 {!isHidden &&
                 <input
@@ -250,20 +247,22 @@ const SearchField = ({
                     value={value}
                     onChange={(event) => setValue(event.target.value)}
                 />}
+                {PopupMenu("בחר מילת סינון", keywords, handleSelectChange)}
                 {/* <label htmlFor="keyword-select">Select a Keyword:</label> */}
-                <select
+                    
+                {/* <Select
                     // multiple={true}
-                    id="keyword-select"
+                    // id="keyword-select"
                     value={selectedKeyword}
                     onChange={handleSelectChange}
                 >
-                    <option>בחר מילת סינון</option>
+                    <Option>בחר מילת סינון</Option>
                     {keywords.map((keyword) => (
-                        <option key={keyword} value={keyword}>
+                        <Option key={keyword} value={keyword}>
                             {keyword}
-                        </option>
+                        </Option>
                     ))}
-                </select>
+                </Select> */}
             </div>
             <div className="search-bar-input-container">
                 {searchTerm.split(" ").map((term, index) => (

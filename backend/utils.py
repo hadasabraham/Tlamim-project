@@ -34,7 +34,6 @@ def add_form(db: Database, server: FormServer, param: FormParameter):
         print("set registration form")
         set_registration_form(db=db, server=server,
                               param=RegistrationFormParameter(param.form_id, param.form_link))
-        return
     form = Form(form_id=param.form_id, form_link=param.form_link, stage=param.stage_index)
     form_structure = server.get_form_structure(form_id=param.form_id)
     db.add_form(form=form, form_structure=form_structure)
@@ -98,7 +97,7 @@ def refresh_registration(db: Database, server: FormServer):
             email, timestamp, answers = FormDecoder.get_form_answers(response=response, email_qid=email_qid)
 
             q_a = FormDecoder.match(form_questions=questions, form_answers=answers)
-            first_name, last_name, stage, modify, phone, status = None, None, 1, datetime.now(), None, "חדש"
+            first_name, last_name, stage, modify, phone, status = None, None, 0, datetime.now(), None, "חדש"
             for q_title, q_ans in q_a:
                 if q_title == "שם פרטי" or q_title == "שם  פרטי":
                     first_name = q_ans

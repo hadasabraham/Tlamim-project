@@ -1,6 +1,7 @@
 import React from 'react';
 import DataTable from 'react-data-table-component';
 import Textarea from '@mui/joy/Textarea';
+import TextareaAutosize from '@mui/base/TextareaAutosize';
 import CreatableSelect from 'react-select/creatable';
 
 import "./dataTable.css";
@@ -20,21 +21,24 @@ const select_options = [
 const columns = (onStatusChange, onGeneralNotesChange) => {
     return [
     {
-        name: 'אימייל', selector: 'email', sortable: true,
+            name: 'אימייל', selector: 'email', sortable: true, width: '12%'
     },
     {
-        name: 'שם', selector: 'name', sortable: true
+        name: 'שם', selector: 'name', sortable: true, width: "10%"
     },
     { 
-        name: 'שלב', selector: 'stage', sortable: true 
+        name: 'שלב', selector: 'stage', sortable: true, width: "7%" 
     },
     {
-        name: 'טלפון', selector: 'phone', sortable: true
+        name: 'טלפון', selector: 'phone', sortable: true, width: "10%" 
     },
     {
-        name: 'סטטוס', selector: 'status', sortable: true, 
+        name: 'ציון', selector: 'average_grade', sortable: true, width: '7%' 
+    },
+    {
+        name: 'סטטוס', selector: 'status', sortable: true,  width: "12%" ,
         cell: row => (
-            <div>
+            <div className="nice-select">
                 {/* <CreatableSelect isClearable defaultInputValue={row.status} 
                 options={select_options} onInputChange={(event) => { onSelect(row.email, event) }} 
                 onChange={(event) => { onSelect(row.email, event) }}></CreatableSelect> */}
@@ -53,17 +57,28 @@ const columns = (onStatusChange, onGeneralNotesChange) => {
     },
 
     {
-        name: 'הערות', selector: 'general_notes', sortable: true,
+        name: 'הערות', selector: 'general_notes', sortable: true, // width: "52%",
         cell: row => (
-            <div>
-                <Textarea type="text" name="name" value={row.general_notes} 
-                onChange={(event) => { onGeneralNotesChange(row.email, event) }} />
-            </div>
+            <textarea
+                value={row.general_notes}
+                onChange={(event) => { onGeneralNotesChange(row.email, event) }}
+                placeholder="הערות"
+                rows={1}
+                cols={50}
+                style={{
+                    padding: '7px',
+                    fontSize: '16px',
+                    borderRadius: '5px',
+                    border: '1px solid #ccc',
+                    resize: 'none',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    width: 'fit-content',
+                    fontFamily: 'Arial, sans-serif',
+                }}
+            />
         )
     },
-    {
-        name: 'ציון', selector: 'average_grade', sortable: true
-    },
+
 
 ];
 }
@@ -78,7 +93,14 @@ const conditionalRowStyles = [
 ];
 
 
-const minimumRows = 0;
+const customStyles = {
+    cells: {
+        style: {
+            width: 'fit-content',
+        },
+    },
+};
+
 
 const data_table = (data, onStatusChange, onGeneralNotesChange) => {
     const emptyRows = []; //Array(minimumRows - data.length).fill({});
@@ -90,12 +112,13 @@ const data_table = (data, onStatusChange, onGeneralNotesChange) => {
                 data={[...data,...emptyRows]}
                 // pagination
                 highliightOnHover
-                selectableRows
+                // selectableRows
                 onRowClicked={rowClicked}
                 persistTableHead
-                selectableRowsHighlight
+                // selectableRowsHighlight
                 fixedHeader
                 conditionalRowStyles={conditionalRowStyles}
+                customStyles={customStyles}
             />
         </div>
     );

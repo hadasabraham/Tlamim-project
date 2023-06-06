@@ -555,7 +555,7 @@ class Database(object):
             grades = session.query(Grade).filter(
                 Grade.email == candidate.email, Grade.stage <= candidate.stage).all()
             for grade in grades:
-                stages_info[str(grade.stage)]["grade"] = str(grade.score)
+                stages_info[str(grade.stage)]["grade"] = str(grade.score).split(".")[0] + str(grade.score).split(".")[1][:1] if "." in str(grade.score) else str(grade.score)
                 stages_info[str(grade.stage)]["notes"] = grade.notes
                 grades_info.append({"stage": grade.stage, "score": grade.score, "notes": grade.notes})
                 if grade.notes:
