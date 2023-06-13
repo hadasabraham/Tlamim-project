@@ -6,6 +6,7 @@ import Textarea from '@mui/joy/Textarea';
 import Popup from 'reactjs-popup';
 
 import "./AddStage.css"
+import PopupButton from './PopUp';
 
 class StagePopUp extends Component {
     state = {
@@ -132,6 +133,16 @@ export default function AddStages() {
         addStage();
     }
 
+    const onRefresh = async () => {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ "request": {} })
+        };
+        await fetch('http://localhost:8001/clear', requestOptions);
+        fetchTodos();
+    }
+
     const onClick = () => {
         window.location.href = 'http://localhost:3000';
     }
@@ -206,11 +217,40 @@ export default function AddStages() {
             </div>
         );
     };
+    const openPopupWindow = () => {
+        const confirmation = window.confirm("האם אתה בטוח שברצונך לאפס את המערכת?");
+        if (confirmation) {
+            onRefresh();
+        }
+    };
+
+    const buttons = () => {
+        return (
+            <div>
+                <Popup trigger=
+                    {<Button onClick={addStage}>הוסף שלב</Button>}
+                    position="left center">
+                    {
+
+                        close => (
+                            <div>
+                                <StagePopUp toggle={(number, name) => onStageToggle(number, name, close)}></StagePopUp>
+                            </div>
+                        )
+                    }
+                </Popup>
+                <> </>
+                <Button onClick={onClick}>חזור</Button>
+                <> </>
+                <Button onClick={openPopupWindow}>איפוס מערכת</Button>
+            </div>
+        );
+    };
 
     return (
         <div>
             
-            {Header("הוספת שלב")}
+            {Header("הוספת שלב", buttons)}
             <DataTable className="candidate-table"
                 columns={columns}
                 data={stage_list}
@@ -219,7 +259,7 @@ export default function AddStages() {
                 // expandableRowsComponent={useRowClicked}
 
             />
-            <div className="buttons"> 
+            {/* <div className="buttons"> 
                 <Popup trigger=
                     {<Button onClick={addStage}>הוסף שלב</Button>}
                     position="left center">
@@ -235,6 +275,10 @@ export default function AddStages() {
                 <> </>
                 <Button onClick={onClick}>חזור</Button>
             </div>
+                {PopupButton("האם אתה בטוח שברצונך לאפס את המערכת?", onRefresh, "איפוס מערכת")} */}
+            {/* <div> 
+                <Button onClick={() => PopupWindow("האם אתה בטוח שברצונך לאפס את המערכת?", () => false)}>אפס מערכת</Button>
+            </div> */}
         </div>
     );
     // <div className='modal'>

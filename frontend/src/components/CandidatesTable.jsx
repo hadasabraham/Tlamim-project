@@ -4,7 +4,33 @@ import SearchField from "./candidateTables/searchField";
 import Header from './Header';
 import './CandidatesTable.css';
 import Button from '@mui/joy/Button';
+import Textarea from '@mui/joy/Textarea';
+import Popup from 'reactjs-popup';
+// class StagePopUp extends Component {
+//     state = {
+//         name: "",
+//         number: ""
+//     };
+//     handleName = (event) => {
+//         this.setState({ name: event.target.value });
+//     };
+//     handleNumber = (event) => {
+//         this.setState({ number: event.target.value });
+//     };
+//     handleClick = () => {
 
+//         this.props.toggle(this.state.number, this.state.name);
+//     };
+//     render() {
+//         return (
+//             <div style={{ display: "grid", gridTemplateColumns: "0fr 3fr 3fr" }}>
+//                 <Button className="submit" onClick={this.handleClick}>הוסף</Button>
+//                 <Textarea className="textbox" type="text" name="name" placeholder={"שם השלב"} onChange={this.handleName} />
+//                 <Textarea className="textbox" type="text" name="name" placeholder={"מספר השלב"} onChange={this.handleNumber} />
+//             </div>
+//         );
+//     }
+// }
 
 class PopUp extends Component
 {
@@ -20,20 +46,25 @@ class PopUp extends Component
     };
     render() {
         return (
-            <div className="modal">
-                <div className="modal_content">
-                    <span className="close" onClick={() => this.props.toggle(false)}>
-                        &times;
-                    </span>
-                    <form>
-                        <label>
-                            Snapshot Name:
-                            <input type="text" name="name" onChange={this.handleName} />
-                        </label>
-                        <button className="submit" onClick={this.handleClick}>submit</button>
-                    </form>
-                </div>
+            <div style={{ display: "grid", gridTemplateColumns: "0fr 3fr" }}>
+                <Button className="submit" onClick={this.handleClick}>יצא</Button>
+                <Textarea className="textbox" type="text" name="name" placeholder={"שם הקובץ"} onChange={this.handleName} />
             </div>
+            
+            // <div className="modal">
+            //     <div className="modal_content">
+            //         <span className="close" onClick={() => this.props.toggle(false)}>
+            //             &times;
+            //         </span>
+            //         <form>
+            //             <label>
+            //                 Snapshot Name:
+            //                 <input type="text" name="name" onChange={this.handleName} />
+            //             </label>
+            //             <button className="submit" onClick={this.handleClick}>submit</button>
+            //         </form>
+            //     </div>
+            // </div>
         );
     }
 }
@@ -122,22 +153,62 @@ export default function CandidatesTable() {
     useEffect(() => {
         refresh();
     }, [])
+    
+    const onAddStage = () => {
+        window.location.href = 'http://localhost:3000/addStages';
+    };
+
+    const buttons = () => {
+        return (
+            <div>
+                <Popup trigger=
+                    {<Button>יצא לאקסל</Button>}
+                    position="left center">
+                    {
+                        close => (
+                            <div>
+                                <PopUp toggle={onToggle}></PopUp>
+                            </div>
+                        )
+                    }
+                </Popup>
+                <> </>
+                <Button className="export" onClick={onAddStage}>ערוך שלבים</Button>
+                <> </>
+                <Button className="export" onClick={onRefresh}>רענן</Button>
+            </div>
+        );
+    };
+
     return (
         <div>
-            {Header("מועמדים")}
+            {Header("מועמדים", buttons)}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr 10fr 3fr 1fr" }}>
-                <div className="but_hoder">
-                    <Button className="export" onClick={onExport}>יצא</Button>
-                </div>
+                {/* <div className="but_hoder">
+                    <Popup trigger=
+                        {<Button>יצא לאקסל</Button>}
+                        position="right center">
+                        {
+                            close => (
+                                <div>
+                                    <PopUp toggle={onToggle}></PopUp>
+                                </div>
+                            )
+                        }
+                    </Popup>
+                </div> */}
+                <div></div>
                 <div></div>
                 <SearchField placeholder="Search candidates" onChange={handleSearch} />
                 <div></div>
-                <div className="but_hoder">
+                <div></div>
+                {/* <div className="but_hoder">
                     <Button className="export" onClick={onRefresh}>רענן</Button>
-                </div>
+                </div> */}
             </div>
-            {state ? <PopUp toggle={onToggle} /> : null}
+            {/* {state ? <PopUp toggle={onToggle} /> : null} */}
             {data_table(candidates_list, onStatusChange, onGeneralNotesChange)}
+            {/* <Button className="export" onClick={onAddStage}>ערוך שלבים</Button> */}
         </div>
     )
 }
