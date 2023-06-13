@@ -3,6 +3,7 @@ from fastapi import Body, FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from EmailServer import EmailServer
 from FormsServer import FormServer
 from pathParameters.parameters import *
 
@@ -12,6 +13,7 @@ import utils
 serverApp = FastAPI()
 db = Database()
 formServer = FormServer()
+emailServer = EmailServer()
 utils.refresh_all_forms(db=db, server=formServer)
 
 origins = ["*"]
@@ -32,6 +34,11 @@ async def clear(request: Request):
 @serverApp.post("/export/")
 async def export(export: ExportParameter = Body(embed=True)):
     db.export_candidates(export.condition, export.name)
+
+
+@serverApp.post("/send/email")
+async def send_email(email_parameter: EmailParameter = Body(embed=True)):
+    utils.send_email(server=emailServer, param=email_parameter)
 
 
 @serverApp.post("/set/status")
@@ -79,6 +86,7 @@ async def set_grade(grade_parameter: GradeParameter = Body(embed=True)):
 async def set_grade(decision_parameter: DecisionParameter = Body(embed=True)):
     next_stage_links = utils.set_decision(db=db, param=decision_parameter)
     # need to send mail with those links. and notify if passed
+
 
 
 @serverApp.get("/candidates/search/{condition}", response_class=JSONResponse)

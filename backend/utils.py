@@ -1,9 +1,9 @@
 from datetime import datetime
-
+from EmailServer import EmailServer
 from FormsServer import FormServer, FormDecoder
 from Tables import Database, Candidate, Stage, Form, Grade, Decision
 from pathParameters.parameters import StageParameter, FormParameter, \
-    RegistrationFormParameter, StatusParameter, GradeParameter, DecisionParameter, GeneralNotesParameter
+    RegistrationFormParameter, StatusParameter, GradeParameter, DecisionParameter, GeneralNotesParameter, EmailParameter
 
 
 def reset_database(db: Database):
@@ -177,3 +177,7 @@ def update_general_notes(db: Database, param: GeneralNotesParameter):
 
 def get_stages_info(db: Database):
     return db.get_stages_info()
+
+
+def send_email(server: EmailServer, param=EmailParameter):
+    server.send_email(to_email=param.to_email, from_email=param.from_email, subject=param.subject, content=param.content)
