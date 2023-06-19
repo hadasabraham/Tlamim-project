@@ -1,0 +1,30 @@
+._popup {
+    color:blue;
+    background-color: blue;
+    border-color: black;
+    outline-color: black;
+    width: 200px;
+}
+._modal {
+    color: blue;
+    background-color: blue;
+    border-color: black;
+    outline-color: black;
+    width: 200px;
+}
+
+.addform {
+    width: 95px;
+}
+
+.buttons {
+    align-content: right;
+    align-items: right;
+    align-self: right;
+    text-align: right;
+}
+
+.textbox {
+    text-align: center;
+    width: 200px;
+}
