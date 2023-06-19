@@ -59,24 +59,30 @@ class FormDecoder(object):
 
         res = []
         for item in form_structure['items']:
-            question_title = item['title'].strip()
-            question_item = item['questionItem']
-            question = question_item['question']
-            question_id = question['questionId']
-            pair = (question_id, question_title)
-            res.append(pair)
+            try:
+                question_title = item['title'].strip()
+                question_item = item['questionItem']
+                question = question_item['question']
+                question_id = question['questionId']
+                pair = (question_id, question_title)
+                res.append(pair)
+            except:
+                continue
         return res
 
     @staticmethod
     def get_key_qid(form_structure: dict, key_title: str = 'דוא"ל') -> str | None:
         for item in form_structure['items']:
-            question_title = item['title'].strip()
-            question_item = item['questionItem']
-            question = question_item['question']
-            question_id = question['questionId']
+            try:
+                question_title = item['title'].strip()
+                question_item = item['questionItem']
+                question = question_item['question']
+                question_id = question['questionId']
 
-            if "דוא" in question_title:# == key_title.strip():
-                return question_id
+                if "דוא" in question_title:# == key_title.strip():
+                    return question_id
+            except:
+                continue
         return None
 
     @staticmethod
