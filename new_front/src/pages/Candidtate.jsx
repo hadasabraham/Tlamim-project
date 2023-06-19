@@ -29,7 +29,13 @@ function ProfilePage ({email}) {
 
     const setNote = (index, value) => {
         const tempGrades = [...candidatesInfo.grades];
-        tempGrades[index].notes = value; // `${tempGrades[index].notes}${value}`;
+        if (candidatesInfo.grades.length > index) {
+            tempGrades[index].notes = value; // `${tempGrades[index].notes}${value}`;
+
+        }
+        else{
+            tempGrades.push({notes: "", score: 0});
+        }
         setCandidate(prev => ({
             ...prev,
             grades: [...tempGrades]
@@ -37,7 +43,11 @@ function ProfilePage ({email}) {
     }
 
     const setScore = (index, value) => {
-        onScoreNotesUpdate(index, candidatesInfo.grades[index].notes, value);
+        if (candidatesInfo.grades.length > index) {
+            onScoreNotesUpdate(index, candidatesInfo.grades[index].notes, value);
+            return;
+        }
+        onScoreNotesUpdate(index, "", value);
     }
 
     const onScoreNotesUpdate = async (stageIndex, _notes, _score) => {
@@ -194,7 +204,8 @@ function ProfilePage ({email}) {
                                                     <div>
                                                     <h4>שלב {stageInfo.stage}</h4>
                                                     <select style={{ textAlign: 'center', alignContent: 'center' }}
-                                                        value={candidatesInfo.grades[parseInt(stageInfo.stage, 10)].score} onChange={(e) => setScore(parseInt(stageInfo.stage, 10), e.target.value)}>
+                                                        value={candidatesInfo.grades.length > parseInt(stageInfo.stage, 10) ?
+                                                            candidatesInfo.grades[parseInt(stageInfo.stage, 10)].score: ""} onChange={(e) => setScore(parseInt(stageInfo.stage, 10), e.target.value)}>
                                                             <option value="0">-</option>
                                                             <option value="1">1</option>
                                                             <option value="2">2</option>
@@ -205,13 +216,16 @@ function ProfilePage ({email}) {
                                                         <div>
                                                         <textarea style={{ textAlign: 'right', alignContent: 'center'}}
                                                         className="textarea" placeholder="הערות" 
-                                                            value={candidatesInfo.grades[parseInt(stageInfo.stage, 10)].notes} 
+                                                            value={
+                                                                    candidatesInfo.grades.length > parseInt(stageInfo.stage, 10) ?
+                                                                    candidatesInfo.grades[parseInt(stageInfo.stage, 10)].notes : ""
+                                                                } 
                                                             onChange={(e) => setNote(parseInt(stageInfo.stage, 10), e.target.value)
                                                             } />
                                                         </div>
                                                         <Stack direction="row-reverse" spacing={0}>
                                                         <button className="button primary" onClick={
-                                                            () => onScoreNotesUpdate(parseInt(stageInfo.stage, 10), candidatesInfo.grades[parseInt(stageInfo.stage, 10)].notes, candidatesInfo.grades[parseInt(stageInfo.stage, 10)].score)
+                                                            () => onScoreNotesUpdate(parseInt(stageInfo.stage, 10), candidatesInfo.grades.length > parseInt(stageInfo.stage, 10) ? candidatesInfo.grades[parseInt(stageInfo.stage, 10)].notes : "", candidatesInfo.grades.length > parseInt(stageInfo.stage, 10) ?candidatesInfo.grades[parseInt(stageInfo.stage, 10)].score: 0)
                                                             } >
                                                                 עדכן הערות
                                                             </button>

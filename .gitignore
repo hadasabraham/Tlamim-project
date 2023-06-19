@@ -7,6 +7,7 @@ backend/.DS_Store
 .DS_Store
 frontend/node_modules/
 frontend/node_models/.*
-new_front/node_models/
-new_front/node_models/.*
 
+backend/examples/.*
+new_front/node_modules/.*
+new_front/node_modules/
