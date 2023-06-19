@@ -84,7 +84,8 @@ async def set_grade(grade_parameter: GradeParameter = Body(embed=True)):
 
 @serverApp.post("/set/decision")
 async def set_grade(decision_parameter: DecisionParameter = Body(embed=True)):
-    next_stage_links = utils.set_decision(db=db, param=decision_parameter)
+    next_stage_links = utils.set_decision(
+        db=db, param=decision_parameter, email_serv=emailServer)
     # need to send mail with those links. and notify if passed
 
 

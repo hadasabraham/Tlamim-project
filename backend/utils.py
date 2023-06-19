@@ -10,10 +10,14 @@ def reset_database(db: Database):
     db.clear_all()
 
 
-def set_decision(db: Database, param: DecisionParameter):
+def set_decision(db: Database, param: DecisionParameter, email_serv):
     decision = Decision(stage=param.stage, email=param.email, passed=param.passed)
     next_stage_links = db.set_decision(decision=decision)
-
+    if param.passed:
+        print("send", param.email, ",".join(next_stage_links))
+        send_email(email_serv, EmailParameter(to_email="tlamin.group11@gmail.com",
+                                              from_email="tlamin.group11@gmail.com",
+                                              subject="שאלון תלמים", content=",".join(next_stage_links)))
     # EmailServer()
     return next_stage_links
 

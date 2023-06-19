@@ -30,13 +30,14 @@ const StyledListItem = styled.div`
 `;
 
 const StyledSelect = styled(Select)(({ theme }) => ({
-    textAlign: 'right',
-    alignItems: 'right',
-    alignContent: 'right',
-    flexDirection: 'row-reverse',
-    justifyContent: 'right',
-    display: 'flex',
-    minWidth: '100px',
+    // textAlign: 'right',
+    // alignItems: 'right',
+    // alignContent: 'right',
+    // flexDirection: 'row-reverse',
+    // justifyContent: 'right',
+    // display: 'flex',
+    minWidth: '200px',
+    // textDecorationColor: '#000',
 }))
 
 const StyledHeader = styled.div`
@@ -50,7 +51,6 @@ const StyledHeader = styled.div`
   font-size: 12px;
   font-weight: 500;
   border-radius: 10px;
-  flex-shrink: 0;
   min-width: 100px;
 
   > :first-child {
@@ -72,7 +72,7 @@ const ListItem = ({ isCollapsed, children }) => (
 );
 
 const List = ({ answers, isCollapsed, setCollapsed, children }) => {
-    const [ans, setAns] = React.useState("")
+    const [ans, setAns] = React.useState("בחר שאלה")
 
     const ansChange = (tmp, e) => {
         setAns(e.props.children);
