@@ -9,3 +9,4 @@ backend/.DS_Store
 .DS_Store
 frontend/node_modules/
 frontend/node_models/.*
+backend/gmail_token.json

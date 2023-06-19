@@ -89,3 +89,17 @@ class ExportParameter:
     def __init__(self, name: str, condition: str):
         self.name = name
         self.condition = condition
+
+
+@dataclass
+class EmailParameter:
+    to_email: str
+    from_email: str
+    subject: str
+    content: str
+
+    def __init__(self, to_email: str, from_email: str, subject: str, content: str):
+        self.to_email = to_email
+        self.from_email = from_email
+        self.subject = subject
+        self.content = content
