@@ -12,8 +12,8 @@ import utils
 
 serverApp = FastAPI()
 db = Database()
-formServer = FormServer()
-emailServer = EmailServer()
+formServer = FormServer(token_path="form_token.json", credentials_path="credentials.json")
+emailServer = EmailServer(token_path="gmail_token.json", credentials_path="credentials.json")
 utils.refresh_all_forms(db=db, server=formServer)
 
 origins = ["*"]

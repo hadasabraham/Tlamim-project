@@ -1,14 +1,26 @@
 import datetime
 
+from EmailServer import EmailServer
 from FormsServer import FormServer
 from Tables import Database, Candidate
 from pathParameters.parameters import RegistrationFormParameter, StageParameter, FormParameter, StatusParameter, \
-    GradeParameter, DecisionParameter
+    GradeParameter, DecisionParameter, EmailParameter
 from utils import search_candidates, set_registration_form, refresh_registration, reset_database, add_stage, add_form, \
-    update_status, refresh_form, get_candidate_full_info, refresh_all_forms, add_grade, set_decision
+    update_status, refresh_form, get_candidate_full_info, refresh_all_forms, add_grade, set_decision,send_email
 
 
-def main():
+
+
+def test_email(server: EmailServer):
+
+    param = EmailParameter(to_email="halroy13@gmail.com", from_email="tlamin.group11@gmail.com",
+                           subject=f"Test email at {datetime.datetime.now()}",
+                           content="Welcome to Tlamim gmail server\r\n"
+                                   "This email will be used to send updates about your application to Tlamim program\r\n")
+    send_email(server=server, param=param)
+
+
+def initial_test():
     form_id = "1wVJJhLn5Jaq3Dve-WhYwxt7nysmnSJISzzayRSypzS8"
     form_link = "https://docs.google.com/forms/d/e/1FAIpQLSd7tEnBxb6pUwTC70DgNHBEfl815LO0YxdaidBHk4I-ml2xog/viewform?usp=sf_link"
 
@@ -100,6 +112,13 @@ def main():
     except Exception as e:
         print("Delete failed")
         print(e)
+
+
+def main():
+    email_server = EmailServer(token_path="gmail_token.json", credentials_path="credentials.json")
+    test_email(server=email_server)
+
+
 
 
 
