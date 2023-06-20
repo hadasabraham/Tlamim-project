@@ -44,7 +44,8 @@ import "./AddStage.css"
 const StyledRoot = styled(Toolbar)(({ theme }) => ({
     height: 96,
     display: 'flex',
-    justifyContent: 'space-between',
+    // justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     padding: theme.spacing(0, 1, 0, 3),
 }));
 
@@ -311,9 +312,6 @@ export default function AddStages() {
 
         <Card>
             <StyledRoot>
-                        {/* <Button variant="contained" startIcon={<Iconify icon="eva:arrow-fill" />} onClick={addStage}>
-                            איתחול מערכת
-                        </Button>   */}
                         {sstate && <StyledRoot>
                             <Button variant="contained" startIcon={<Iconify icon="eva:arrow-left-fill" />} onClick={() => onStageToggle(number, name)}>
                                 הוסף
@@ -340,10 +338,14 @@ export default function AddStages() {
                                 fontFamily: 'Arial, sans-serif',
                                 marginLeft: '10px'
                             }} />
+                            <Button variant="contained" style={{marginLeft: '10px'}} startIcon={<Iconify icon="eva:arrow-right-fill" />} onClick={() => setsState(false)}>
+                                חזור
+                            </Button>
                         </StyledRoot>}    
-                        <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => setsState(!sstate)}>
-                            הוספת שלב
-                        </Button>
+                        
+                        { !sstate && <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => setsState(!sstate)}>
+                            הוסף שלב
+                        </Button> }
             </StyledRoot>
 
           <Scrollbar>

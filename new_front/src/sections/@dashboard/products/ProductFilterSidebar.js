@@ -270,6 +270,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             color="inherit"
             variant="outlined"
             startIcon={<Iconify icon="ic:round-clear-all" />}
+            onClick={(e) => {onFilterEmail(""); onFilterName(""); onFilterPhone(""); onFilterNotes(""); onStageChange(""); onStatusChange("");}}
           >
             מחק סינונים
           </Button>

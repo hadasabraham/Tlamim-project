@@ -183,6 +183,9 @@ export default function UserPage() {
           <Button variant="contained" startIcon={<Iconify icon="eva:refresh-fill" />} onClick={onRefresh}>
             רענן
           </Button>
+          <Button variant="contained" onClick={onToggle}>
+            ייצא מועמדים לקובץ אקסל
+          </Button>
           <Typography variant="h4" gutterBottom>
             <Stack direction="row" alignItems="right">
               מועמדים
