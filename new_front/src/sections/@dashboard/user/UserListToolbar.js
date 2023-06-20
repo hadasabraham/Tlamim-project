@@ -42,7 +42,7 @@ UserListToolbar.propTypes = {
   onFilterName: PropTypes.func,
 };
 
-export default function UserListToolbar({ numSelected, filterName, onFilterName }) {
+export default function UserListToolbar({ numSelected, filterName, onFilterName, setFilters }) {
   const [openFilter, setOpenFilter] = useState(false);
 
   const handleOpenFilter = () => {
@@ -81,6 +81,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName 
         openFilter={openFilter}
         onOpenFilter={handleOpenFilter}
         onCloseFilter={handleCloseFilter}
+        setFilters={setFilters}
         maxStage={5}
       />
     </StyledRoot>

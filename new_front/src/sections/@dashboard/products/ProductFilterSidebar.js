@@ -39,7 +39,7 @@ export const SORT_BY_OPTIONS = [
   { value: 'priceDesc', label: 'Price: High-Low' },
   { value: 'priceAsc', label: 'Price: Low-High' },
 ];
-export const FILTER_GENDER_OPTIONS = ["ללא", "ממתין לטופס", "להתקשר", "חסר התייחסות", "הוסר"];
+export const FILTER_GENDER_OPTIONS = ["ממתין לטופס", "להתקשר", "חסר התייחסות", "הוסר"];
 export const FILTER_CATEGORY_OPTIONS = ['All', 'Shose', 'Apparel', 'Accessories'];
 export const FILTER_RATING_OPTIONS = ['up4Star', 'up3Star', 'up2Star', 'up1Star'];
 export const FILTER_PRICE_OPTIONS = [
@@ -99,10 +99,51 @@ const arrayRange = (start, stop, step) =>
     (value, index) => start + index * step
   );
 
-export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter, maxStage}) {
-  const { filterName, onFilterName} = useState("");
-  const { stage, onStageChange} = useState("");
-  const { status, onStatusChange} = useState("");
+export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter, maxStage, setFilters}) {
+  const [ filterName, onFilterName] = useState("");
+  const [ filterEmail, onFilterEmail ] = useState("");
+  const [ filterPhone, onFilterPhone ] = useState("");
+  const [ filterNotes, onFilterNotes ] = useState("");
+  const [ stage, onStageChange ] = useState("");
+  const [ status, onStatusChange ] = useState("");
+  const filterSelect = () => {
+    let filters = "";
+    if (filterEmail !== "" && filterEmail !== undefined) {
+      filters = `אימייל=${filterEmail}`
+    }
+    if (filterName !== "" && filterName !== undefined) {
+      if (filters !== "") {
+        filters = `${filters} `
+      }
+      filters = `${filters}שם=${filterName}`
+    }
+    if (filterPhone !== "" && filterPhone !== undefined) {
+      if (filters !== "") {
+        filters = `${filters} `
+      }
+      filters = `${filters}טלפון=${filterPhone}`
+    }
+    // if (filterNotes !== "") {
+    //   if (filters !== "") {
+    //     const filters = `${filters} `
+    //   }
+    //   const filters = `${filters}notes=${filterNotes}}`
+    // }
+    if (stage !== "" && stage !== undefined) {
+      if (filters !== "") {
+        filters = `${filters} `
+      }
+      filters = `${filters}שלב=${stage}`
+    }
+    if (status !== "" && status !== undefined && status !== "ללא") {
+      if (filters !== "") {
+        filters = `${filters} `
+      }
+      filters = `${filters}סטטוס=${status}`
+    }
+    onCloseFilter();
+    setFilters(filters);
+  }
 
   return (
     <>
@@ -134,8 +175,8 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             <div>
               <StyledSearch
                 inputProps={{ min: 0, style: { textAlign: 'right' } }}
-                value={filterName}
-                onChange={onFilterName}
+                value={filterEmail}
+                onChange={(e)=>onFilterEmail(e.target.value)}
                 placeholder="אימייל"
               />
             </div>
@@ -143,7 +184,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
               <StyledSearch
                 inputProps={{ min: 0, style: { textAlign: 'right' } }}
                 value={filterName}
-                onChange={onFilterName}
+                onChange={(e) => onFilterName(e.target.value)}
                 placeholder="שם"
               />
             </div>
@@ -156,8 +197,9 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                     id="demo-simple-select"
                     value={stage}
                     label="שלב"
-                    onChange={onStageChange}
+                    onChange={(e)=>onStageChange(e.target.value)}
                   >
+                    <MenuItem value={""}>{"ללא"}</MenuItem>
                     {arrayRange(0, maxStage, 1).map((item) => (
                       <MenuItem value={item}>{item}</MenuItem>
                     ))}
@@ -168,8 +210,8 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             <div>
               <StyledSearch
                 inputProps={{ min: 0, style: { textAlign: 'right' } }}
-                value={filterName}
-                onChange={onFilterName}
+                value={filterPhone}
+                onChange={(e) => onFilterPhone(e.target.value)}
                 placeholder="טלפון"
               />
             </div>
@@ -182,8 +224,9 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                       id="demo-simple-select"
                       value={status}
                       label="סטטוס"
-                      onChange={onStatusChange}
+                    onChange={(e) => onStatusChange(e.target.value)}
                     >
+                    <MenuItem value={"ללא"}>{""}</MenuItem>
                       {FILTER_GENDER_OPTIONS.map((item) => (
                         <MenuItem value={item}>{item}</MenuItem>
                       ))}
@@ -194,14 +237,31 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             <div>
               <StyledSearch
                 inputProps={{ min: 0, style: { textAlign: 'right' } }}
-                value={filterName}
-                onChange={onFilterName}
+                value={filterNotes}
+                onChange={(e)=>onFilterNotes(e.target.value)}
                 placeholder="הערות"
               />
             </div>
           </Stack>
         </Scrollbar>
-
+        <Button 
+        variant="contained" startIcon={<Iconify icon="ph:x-bold" />} 
+          onClick={filterSelect}>
+          חפש
+        </Button>
+        <Box sx={{ p: 3 }}>
+          <Button
+            fullWidth
+            size="large"
+            type="submit"
+            color="inherit"
+            variant="outlined"
+            startIcon={<Iconify icon="ic:round-clear-all" />}
+            onSelect={filterSelect}
+          >
+            חפש
+          </Button>
+        </Box>
         <Box sx={{ p: 3 }}>
           <Button
             fullWidth
@@ -211,7 +271,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             variant="outlined"
             startIcon={<Iconify icon="ic:round-clear-all" />}
           >
-            Clear All
+            מחק סינונים
           </Button>
         </Box>
       </Drawer>

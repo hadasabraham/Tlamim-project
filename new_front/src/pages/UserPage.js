@@ -192,7 +192,7 @@ export default function UserPage() {
         </Stack>
 
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName}/>
+          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} setFilters={handleSearch}/>
 
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
