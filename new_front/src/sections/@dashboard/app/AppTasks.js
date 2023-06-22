@@ -141,17 +141,17 @@ function TaskItem({ task, checked, onChange }) {
           },
         }}
       >
-        <MenuItem onClick={handleMarkComplete}>
+        <MenuItem key={1} onClick={handleMarkComplete}>
           <Iconify icon={'eva:checkmark-circle-2-fill'} sx={{ mr: 2 }} />
           Mark Complete
         </MenuItem>
 
-        <MenuItem onClick={handleEdit}>
+        <MenuItem key={2} onClick={handleEdit}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
 
-        <MenuItem onClick={handleShare}>
+        <MenuItem key={3} onClick={handleShare}>
           <Iconify icon={'eva:share-fill'} sx={{ mr: 2 }} />
           Share
         </MenuItem>

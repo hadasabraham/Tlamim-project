@@ -199,9 +199,9 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
                     label="שלב"
                     onChange={(e)=>onStageChange(e.target.value)}
                   >
-                    <MenuItem value={""}>{"ללא"}</MenuItem>
+                    <MenuItem key={0} value={""}>{"ללא"}</MenuItem>
                     {arrayRange(0, maxStage, 1).map((item) => (
-                      <MenuItem value={item}>{item}</MenuItem>
+                      <MenuItem key={item} value={item}>{item}</MenuItem>
                     ))}
                   </StyledSelect>
                 </FormControl>

@@ -196,7 +196,8 @@ class Database(object):
         self.forms = None
         self.forms_db = FormsDatabase()
         self.meta = MetaData()
-        self.engine = create_engine(f"sqlite:///{db_name}", echo=echo)
+        self.engine = create_engine(
+            f"sqlite:///{db_name}", echo=echo, pool_size=20)
         # event.listen(self.engine, 'connect', Database._fk_pragma_on_connect)  # activate FK checkup
 
         self.session = sessionmaker(bind=self.engine, expire_on_commit=False)
