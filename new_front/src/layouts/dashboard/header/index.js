@@ -34,9 +34,7 @@ const StyledRootOther = styled(AppBar)(({ theme }) => ({
     }),
   boxShadow: 'none',
   color: 'transparent',
-  [theme.breakpoints.up('lg')]: {
-    width: '50px',
-  },
+  width: '60px',
 }));
 
 const StyledToolbar = styled(Toolbar)(({ theme }) => ({

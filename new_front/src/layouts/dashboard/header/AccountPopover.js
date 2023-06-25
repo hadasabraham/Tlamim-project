@@ -1,7 +1,7 @@
 import { useState } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
-import { Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover, List } from '@mui/material';
+import { Button, Box, Divider, Typography, Stack, MenuItem, Avatar, IconButton, Popover, List } from '@mui/material';
 // mocks_
 import account from '../../../_mock/account';
 import navConfig from '../nav/config';
@@ -61,9 +61,9 @@ export default function AccountPopover() {
               content: "''",
               width: '100%',
               height: '100%',
-              borderRadius: '50%',
+              // borderRadius: '50%',
               position: 'absolute',
-              bgcolor: (theme) => alpha(theme.palette.grey[900], 0.8),
+              // bgcolor: (theme) => alpha(theme.palette.grey[900], 0.8),
             },
           }),
         }}

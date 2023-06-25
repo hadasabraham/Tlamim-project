@@ -69,7 +69,7 @@ async def refresh(request: Request):
 
 @serverApp.post("/add/stage")
 async def add_stage(stage_parameter: StageParameter = Body(embed=True)):
-    utils.add_stage(db=db, param=stage_parameter)
+    utils.add_stage(db=db, server=formServer, param=stage_parameter)
 
 
 @serverApp.put("/add/form/")

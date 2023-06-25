@@ -23,14 +23,15 @@ function Candidate() {
 
 export default function Router() {
   return (
-  <Routes>
-      <Route path='/candidate' element={<DashboardLayout />}>
-        <Route path=":email" element={<Candidate />} />
-    </Route>
-    <Route path="/" element={<DashboardLayout />}>
+  <Routes path="/" element={<DashboardLayout/>}>
+      <Route path="/" element={<DashboardLayout/>}>
+        <Route path='/candidate' element={<DashboardLayout />}>
+          <Route path=":email" element={<Candidate />} />
+        </Route>
         <Route path="candidates" element={<UserPage />} />
-      <Route path="stages" element={<AddStages />} />
-    </Route>
+        <Route path="stages" element={<AddStages />} />
+        <Route path="statistics" element={<DashboardAppPage />} />
+      </Route>
   </Routes>);
   // const routes = useRoutes([
   //   {
