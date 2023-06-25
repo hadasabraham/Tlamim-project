@@ -2,12 +2,12 @@ import PropTypes from 'prop-types';
 import React, { useState } from "react";
 // @mui
 import { styled, alpha } from '@mui/material/styles';
-import { Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment } from '@mui/material';
+import { Toolbar, Tooltip, Button, IconButton, Typography, OutlinedInput, InputAdornment } from '@mui/material';
 // component
 import Iconify from '../../../components/iconify';
 
 import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from '../products';
-
+import onExport from '../../../pages/UserPage';
 
 // ----------------------------------------------------------------------
 
@@ -61,7 +61,10 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
         }),
       }}
     >
-      {numSelected > 0 ? (
+      <Button variant="contained" startIcon={<Iconify icon="ph:export" />} onClick={onExport}>
+            יצא
+      </Button>
+      {/* {numSelected > 0 ? (
         <Typography component="div" variant="subtitle1">
           {numSelected} selected
         </Typography>
@@ -76,7 +79,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
             </InputAdornment>
           }
         />
-      )}
+      )} */}
       <ProductFilterSidebar
         openFilter={openFilter}
         onOpenFilter={handleOpenFilter}

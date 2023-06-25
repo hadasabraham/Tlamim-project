@@ -1,3 +1,7 @@
 .container {
     background-image: url(../../../public/assets/images/covers/cover_19.jpg);
+    /* width: 100%; */
+    background-size: cover;
+    background-repeat: no-repeat;
+
 }
