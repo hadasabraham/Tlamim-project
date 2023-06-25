@@ -6,6 +6,7 @@ import './CandidatesTable.css';
 import Button from '@mui/joy/Button';
 import Textarea from '@mui/joy/Textarea';
 import Popup from 'reactjs-popup';
+import _ from "lodash";
 // class StagePopUp extends Component {
 //     state = {
 //         name: "",
@@ -110,7 +111,7 @@ export default function CandidatesTable() {
         refresh(); 
     };
 
-    const onGeneralNotesChange = async (email, event) => {
+    const onGeneralNotesChange = _.debounce(async (email, event) => {
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -118,7 +119,7 @@ export default function CandidatesTable() {
         };
         await fetch('http://localhost:8001/set/general_notes', requestOptions);
         refresh();
-    };
+    }, 10000);
 
     const onExport = () => {
         setState(!state);

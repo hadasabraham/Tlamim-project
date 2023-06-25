@@ -46,6 +46,7 @@ const StyledRoot = styled(Toolbar)(({ theme }) => ({
     display: 'flex',
     justifyContent: 'space-between',
     padding: theme.spacing(0, 1, 0, 3),
+    justifyContent: 'right',
 }));
 
 class StagePopUp extends Component {
@@ -320,6 +321,7 @@ export default function AddStages() {
                             </Button>
                             <textarea className="textbox" placeholder={"שם השלב"} onChange={handleName} style={{
                                 fontSize: '16px',
+                                lineHeight: '25px',
                                 borderRadius: '5px',
                                 border: '1px solid #ccc',
                                 resize: 'none',
@@ -331,6 +333,7 @@ export default function AddStages() {
                             }} />
                             <textarea className="textbox" placeholder={"מספר השלב"} onChange={handleNumber} style={{
                                 fontSize: '16px',
+                                lineHeight: '25px',
                                 borderRadius: '5px',
                                 border: '1px solid #ccc',
                                 resize: 'none',
@@ -377,12 +380,12 @@ export default function AddStages() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem key={1}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem key={2}sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>

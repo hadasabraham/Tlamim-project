@@ -212,6 +212,7 @@ export default function UserPage() {
 
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
+              {/* <dataTable data={candidateslist} onStatusChange={onStatusChange} sentGeneralNotes={onGeneralNotesChange}/> */}
               {dataTable(candidateslist, onStatusChange, onGeneralNotesChange)}
             </TableContainer>
           </Scrollbar>
@@ -237,12 +238,12 @@ export default function UserPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem key={1}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem key={2} sx={{ color: 'error.main' }}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>

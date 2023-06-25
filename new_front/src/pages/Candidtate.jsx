@@ -28,18 +28,22 @@ function ProfilePage ({email}) {
     };
 
     const setNote = (index, value) => {
-        const tempGrades = [...candidatesInfo.grades];
-        if (candidatesInfo.grades.length > index) {
-            tempGrades[index].notes = value; // `${tempGrades[index].notes}${value}`;
+        // const tempGrades = [...candidatesInfo.grades];
+        // if (candidatesInfo.grades.length > index) {
+        //     tempGrades[index].notes = value; // `${tempGrades[index].notes}${value}`;
 
+        // }
+        // else{
+        //     tempGrades.push({notes: "", score: 0});
+        // }
+        // setCandidate(prev => ({
+        //     ...prev,
+        //     grades: [...tempGrades]
+        // }))
+        if (candidatesInfo.grades.length > index) {
+            onScoreNotesUpdate(index, value, candidatesInfo.grades[index].score);
         }
-        else{
-            tempGrades.push({notes: "", score: 0});
-        }
-        setCandidate(prev => ({
-            ...prev,
-            grades: [...tempGrades]
-        }))
+        onScoreNotesUpdate(index, value, 0);
     }
 
     const setScore = (index, value) => {
@@ -224,11 +228,11 @@ function ProfilePage ({email}) {
                                                             } />
                                                         </div>
                                                         <Stack direction="row-reverse" spacing={0}>
-                                                        <button className="button primary" onClick={
+                                                        {/* <button className="button primary" onClick={
                                                             () => onScoreNotesUpdate(parseInt(stageInfo.stage, 10), candidatesInfo.grades.length > parseInt(stageInfo.stage, 10) ? candidatesInfo.grades[parseInt(stageInfo.stage, 10)].notes : "", candidatesInfo.grades.length > parseInt(stageInfo.stage, 10) ?candidatesInfo.grades[parseInt(stageInfo.stage, 10)].score: 0)
                                                             } >
                                                                 עדכן הערות
-                                                            </button>
+                                                            </button> */}
                                                             <button className="button secondary" onClick={() => onNextLevel(candidatesInfo)}>
                                                                 העבר שלב
                                                             </button>
