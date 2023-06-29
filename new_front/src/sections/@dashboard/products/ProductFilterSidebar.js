@@ -99,13 +99,14 @@ const arrayRange = (start, stop, step) =>
     (value, index) => start + index * step
   );
 
-export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter, maxStage, setFilters}) {
+export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFilter, maxStage, setFilters, filters}) {
   const [ filterName, onFilterName] = useState("");
   const [ filterEmail, onFilterEmail ] = useState("");
   const [ filterPhone, onFilterPhone ] = useState("");
   const [ filterNotes, onFilterNotes ] = useState("");
   const [ stage, onStageChange ] = useState("");
   const [ status, onStatusChange ] = useState("");
+
   const filterSelect = () => {
     let filters = "";
     if (filterEmail !== "" && filterEmail !== undefined) {
@@ -145,8 +146,39 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
     setFilters(filters);
   }
 
+  function clearFilter(name) {
+    if (name === 'אימייל')
+    {
+      onFilterEmail("");
+    }
+    if (name === 'טלפון') {
+      onFilterName("");
+    }
+    if (name === 'הערות') {
+      onFilterNotes("");
+    }
+    if (name === 'שלב') {
+      onStageChange("");
+    }
+    if (name === 'סטטוס') {
+      onStatusChange("");
+    }
+  }
+
+  function clearAll() {
+    onFilterName("");
+    onFilterEmail("");
+    onFilterPhone("");
+    onFilterNotes("");
+    onStageChange("");
+    onStatusChange("");
+    onCloseFilter();
+    setFilters("");
+  }
+
   return (
     <>
+      {filters(clearFilter)}
       <Button disableRipple color="inherit" endIcon={<Iconify icon="ic:round-filter-list" />} onClick={onOpenFilter}>
         Filters&nbsp;
       </Button>
@@ -244,11 +276,6 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             </div>
           </Stack>
         </Scrollbar>
-        <Button 
-        variant="contained" startIcon={<Iconify icon="ph:x-bold" />} 
-          onClick={filterSelect}>
-          חפש
-        </Button>
         <Box sx={{ p: 3 }}>
           <Button
             fullWidth
@@ -256,8 +283,8 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             type="submit"
             color="inherit"
             variant="outlined"
-            startIcon={<Iconify icon="ic:round-clear-all" />}
-            onSelect={filterSelect}
+            startIcon={<Iconify icon="mdi:search" />}
+            onClick={filterSelect}
           >
             חפש
           </Button>
@@ -270,6 +297,7 @@ export default function ShopFilterSidebar({ openFilter, onOpenFilter, onCloseFil
             color="inherit"
             variant="outlined"
             startIcon={<Iconify icon="ic:round-clear-all" />}
+            onClick={clearAll}
           >
             מחק סינונים
           </Button>

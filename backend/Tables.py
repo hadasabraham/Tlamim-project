@@ -426,9 +426,22 @@ class Database(object):
             session.commit()
         self.update_modify(email=grade.email)
 
+    def remove_stage(self, stage: int):
+        with self.session() as session:
+            if self.is_stage_exists(stage=Stage(index=stage)):
+                session.query(Form).filter(
+                    Form.stage == stage).delete()
+                session.query(Stage).filter(
+                    Stage.index == stage).delete()
+            session.commit()
+        
+
     def add_stage(self, stage: Stage):
         with self.session() as session:
             if not self.is_stage_exists(stage=stage):
+                session.add(stage)
+            else:
+                session.query(Stage).filter(Stage.index == stage.index).delete()
                 session.add(stage)
             session.commit()
 
@@ -481,6 +494,9 @@ class Database(object):
         """
         with self.session() as session:
             if not self.is_form_exists(form=form):
+                session.add(form)
+                self.forms_db.add_form(form_id=form.form_id, form_structure=form_structure)
+            else:
                 session.add(form)
                 self.forms_db.add_form(form_id=form.form_id, form_structure=form_structure)
             session.commit()

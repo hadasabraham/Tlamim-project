@@ -28,7 +28,15 @@ def add_grade(db: Database, param: GradeParameter):
     db.update_average(email=param.email)  # after updating the grades of a candidate recalculate its average score
 
 
-def add_stage(db: Database, server: FormServer, param: StageParameter):
+def remove_stage(db: Database, stage):
+    int_stage = -1
+    try:
+        int_stage = int(stage)
+    except:
+        return
+    db.remove_stage(int_stage)
+
+def add_stage(db: Database, param: StageParameter):
     stage = Stage(index=param.index, name=param.name, msg=param.msg)
     db.add_stage(stage=stage)
     # r_form = server.create_new_form("שלב "+str(param.index))

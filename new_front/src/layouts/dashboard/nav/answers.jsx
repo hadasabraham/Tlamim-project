@@ -1,18 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import styled from "styled-components";
-import {
-    Select,
-    MenuItem,
-} from "@mui/material";
-// import Motion, { Move, Reveal } from "@element-motion/core";
+import { Select, MenuItem } from "@mui/material";
 
 const StyledContainer = styled.div`
   display: flex;
   flex-direction: row-reverse;
   align: center;
   /* Padding seems to fuck up the motion. WHY? */
-  /* padding: 8px; */
+  padding: 10px;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   position: relative;
   background-color: transparent;
@@ -23,22 +18,15 @@ const StyledContainer = styled.div`
 
 const StyledListItem = styled.div`
   padding: 16px;
-  position: ${props => (props.isCollapsed ? "absolute" : "static")};
+  position: ${(props) => (props.isCollapsed ? "absolute" : "static")};
   top: 0;
   left: 0;
   right: 0;
 `;
 
 const StyledSelect = styled(Select)(({ theme }) => ({
-    // textAlign: 'right',
-    // alignItems: 'right',
-    // alignContent: 'right',
-    // flexDirection: 'row-reverse',
-    // justifyContent: 'right',
-    // display: 'flex',
-    minWidth: '200px',
-    // textDecorationColor: '#000',
-}))
+    minWidth: "200px",
+}));
 
 const StyledHeader = styled.div`
   flex-direction: column;
@@ -65,68 +53,55 @@ const StyledButton = styled.button`
 
 const ListItem = ({ isCollapsed, children }) => (
     <div>
-        {!isCollapsed && <StyledListItem isCollapsed={isCollapsed}>
-            {children}
-        </StyledListItem>}
-    </div >
+        {!isCollapsed && <StyledListItem isCollapsed={isCollapsed}>{children}</StyledListItem>}
+    </div>
 );
 
 const List = ({ answers, isCollapsed, setCollapsed, children }) => {
-    const [ans, setAns] = React.useState("בחר שאלה")
+    const [selectedQuestion, setSelectedQuestion] = React.useState("בחר שאלה");
 
-    const ansChange = (tmp, e) => {
-        setAns(e.props.children);
-        setCollapsed(isCollapsed.map(
-            (item, i) => i === e.props.value ? !item : true));
-    }
+    const handleQuestionChange = (event) => {
+        const selectedValue = event.target.value;
+        setSelectedQuestion(selectedValue);
+        const selectedQuestionIndex = answers.findIndex((answer) => answer.question === selectedValue);
+        const updatedCollapsed = isCollapsed.map((item, index) => index === selectedQuestionIndex ? !item : true);
+        setCollapsed(updatedCollapsed);
+    };
 
-    return(
-    <div>
-            <StyledContainer >
-                <StyledHeader>
-                    <StyledSelect
+    return (
+        <div>
+            <StyledContainer>
+                <StyledSelect
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={ans}
-                    label="שאלות"
-                    onChange={ansChange}>
-                        {answers.map((answer, ind) => (
-                            <MenuItem key={ind} value={ind}>{answer.question}</MenuItem>
-                        ))}
-                    </StyledSelect>
-                    {/* {answers.map((answer, ind) =>
-                        <StyledButton key={ind} onClick = {() => setCollapsed(isCollapsed.map(
-                        (item, i) => i === ind ? !item : true))}>{answer.question}</StyledButton>
-                    )} */}
-                </StyledHeader>
+                    value={selectedQuestion}
+                    onChange={handleQuestionChange}
+                >
+                    <MenuItem value="בחר שאלה">בחר שאלה</MenuItem>
+                    {answers.map((answer, ind) => (
+                        <MenuItem key={ind + 1} value={answer.question}>
+                            {answer.question}
+                        </MenuItem>
+                    ))}
+                </StyledSelect>
                 {children}
             </StyledContainer>
-    </div>
-);
-}
+        </div>
+    );
+};
 
-// const listOfLen = (len, val) =>
-// {
-//     const list = [];
-//     for (let i = 0; i < len; i+=1)
-//     {
-//         list.push(val);
-//     }
-//     return list;
-// }
-
-
-const Answers = ({answers}) => {
-
+const Answers = ({ answers }) => {
     const [isCollapsed, setCollapsed] = React.useState(Array(answers.length).fill(true));
 
     return (
         <List answers={answers} isCollapsed={isCollapsed} setCollapsed={setCollapsed}>
-            {answers.map((answer, i) =>            
-                <ListItem key={i} isCollapsed={isCollapsed[i]}>{answer.answer}</ListItem>
-            )}
+            {answers.map((answer, i) => (
+                <ListItem key={i} isCollapsed={isCollapsed[i]}>
+                    {answer.answer}
+                </ListItem>
+            ))}
         </List>
     );
-}
-export default Answers
+};
 
+export default Answers;

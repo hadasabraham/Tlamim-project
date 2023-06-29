@@ -33,6 +33,8 @@ import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import USERLIST from '../_mock/user';
 import SvgColor from '../components/svg-color';
+import "./UserPage.css"
+import { func } from 'prop-types';
 
 // ----------------------------------------------------------------------
 
@@ -91,6 +93,45 @@ export default function UserPage() {
   }
   const refresh = () => {
     fetchTodos(cond)
+  }
+
+  const handleInpChange = (keyword, value) => {
+    const newCond = cond.replace(keyword, value).trim();
+    setCond(newCond);
+    handleSearch(newCond);
+  };
+
+  const handleRemoveKeyword = (keyword) => {
+    const newCond = cond.replace(keyword, "").trim();
+    setCond(newCond);
+    handleSearch(newCond);
+  };
+
+  function filters(clearFilter) {
+    return (
+      cond !== "הכול" && cond !== "" && <div className="search-bar-input-container">
+        {cond.split(" ").map((term, index) => (
+          <div key={index} className="pill-container">
+            <input className='pill'
+              disabled={true}
+              style={{ width: `${(term === "חסרים" ? "ממתינים לטיפול" : term).length + 2}ch` }}
+              type="text" value={term === "חסרים" ? "ממתינים לטיפול" : term}
+              onChange={(event) => handleInpChange(term, event.target.value)} />
+            {
+              // keywords.includes(term.toLowerCase()) && 
+              (
+                <button
+                  className="remove-button"
+                  onClick={() => {handleRemoveKeyword(term); clearFilter(term.split("=")[0]);}}
+                >
+                  X
+                </button>
+              )}
+          </div>
+        ))}
+
+      </div>
+    );
   }
 
   const onStatusChange = async (email, event) => {
@@ -208,8 +249,8 @@ export default function UserPage() {
         </Stack>
 
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} setFilters={handleSearch}/>
-
+          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} setFilters={handleSearch} filters={filters}/>
+          
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               {/* <dataTable data={candidateslist} onStatusChange={onStatusChange} sentGeneralNotes={onGeneralNotesChange}/> */}

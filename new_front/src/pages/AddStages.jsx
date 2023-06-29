@@ -41,6 +41,21 @@ import SvgColor from '../components/svg-color';
 // import Button from '@mui/joy/button';
 import "./AddStage.css"
 
+const StyledButton = styled(Button)(({ theme }) => ({
+    marginLeft: '10px',
+    
+}));
+
+const StyledButtonS = styled(Button)(({ theme }) => ({
+    marginLeft: '340px'
+}));
+
+const StyledStack = styled(Stack)(({ theme }) => ({
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: theme.spacing(0, 1, 0, 3),
+}));
+
 const StyledRoot = styled(Toolbar)(({ theme }) => ({
     height: 96,
     display: 'flex',
@@ -141,6 +156,10 @@ export default function AddStages() {
     }
 
     const onRefresh = async () => {
+        const confirmation = window.confirm('האם ברצונך לאפס את המערכת?');
+        if (!confirmation) {
+            return;
+        }
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -152,6 +171,19 @@ export default function AddStages() {
 
     const onClick = () => {
         window.location.href = 'http://localhost:3000';
+    }
+
+    const onStageRemove = async (stageNumber) => {
+        const confirmation = window.confirm('האם ברצונך להסיר שלב זה?');
+        if (!confirmation) {
+            return;
+        }
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        };
+        await fetch(`http://localhost:8001/remove/stage/${stageNumber}`, requestOptions);
+        addStage();
     }
 
     const useRows = (row) => {
@@ -168,7 +200,7 @@ export default function AddStages() {
         };
         if (row.forms === 0 || row.forms.length === 0) {
             return (
-                <StyledRoot>
+                <Stack direction="row">
                     <textarea className="textbox" placeholder={"form id"} onChange={handleId} style={{
                         fontSize: '16px',
                         borderRadius: '5px',
@@ -178,7 +210,7 @@ export default function AddStages() {
                         width: 'fit-content',
                         height: '35px',
                         fontFamily: 'Arial, sans-serif',
-                        marginLeft: '1px'
+                        marginLeft: '5px'
                     }} />
                     <textarea className="textbox" placeholder={"form link"} onChange={handleLink} style={{
                         fontSize: '16px',
@@ -189,14 +221,19 @@ export default function AddStages() {
                         width: 'fit-content',
                         height: '35px',
                         fontFamily: 'Arial, sans-serif',
-                        marginLeft: '1px'
+                        marginLeft: '5px'
                     }} />
-                    <Button variant="contained" className="addform" onClick={onAddLink}>הוספה</Button>
-                </StyledRoot>
+                    <StyledButton variant="contained" className="addform" onClick={onAddLink}>הוספה</StyledButton>
+                    <StyledButton variant="contained" onClick={() => onStageRemove(row.index)}>הסר שלב</StyledButton> 
+                </Stack>
             );
         }
         return (
-            <Button variant="contained" onClick={() => window.open(row.forms[0]?.link)}>פתח טופס</Button> 
+            <Stack direction="row">
+                <StyledButtonS variant="contained" onClick={() => window.open(row.forms[0]?.link)}>פתח טופס</StyledButtonS> 
+                <Button variant="contained" onClick={() => onStageRemove(row.index)}>הסר שלב</Button> 
+
+            </Stack>
         );
     }
 

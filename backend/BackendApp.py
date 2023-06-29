@@ -67,9 +67,14 @@ async def refresh(request: Request):
     utils.refresh_all_forms(db=db, server=formServer)
 
 
+@serverApp.post("/remove/stage/{stage}", response_class=JSONResponse)
+async def remove_stage(stage: str):
+    utils.remove_stage(db=db, stage=stage)
+
+
 @serverApp.post("/add/stage")
 async def add_stage(stage_parameter: StageParameter = Body(embed=True)):
-    utils.add_stage(db=db, server=formServer, param=stage_parameter)
+    utils.add_stage(db=db, param=stage_parameter)
 
 
 @serverApp.put("/add/form/")

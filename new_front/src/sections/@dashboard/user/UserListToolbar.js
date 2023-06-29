@@ -42,7 +42,7 @@ UserListToolbar.propTypes = {
   onFilterName: PropTypes.func,
 };
 
-export default function UserListToolbar({ numSelected, filterName, onFilterName, setFilters }) {
+export default function UserListToolbar({ numSelected, filterName, onFilterName, setFilters, filters }) {
   const [openFilter, setOpenFilter] = useState(false);
 
   const handleOpenFilter = () => {
@@ -64,6 +64,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
       <Button variant="contained" startIcon={<Iconify icon="ph:export" />} onClick={onExport}>
             יצא
       </Button>
+      {/* {filters()} */}
       {/* {numSelected > 0 ? (
         <Typography component="div" variant="subtitle1">
           {numSelected} selected
@@ -86,6 +87,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
         onCloseFilter={handleCloseFilter}
         setFilters={setFilters}
         maxStage={5}
+        filters={filters}
       />
     </StyledRoot>
   );
