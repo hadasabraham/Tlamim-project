@@ -41,7 +41,39 @@ class FormServer(object):
     
     def create_new_form(self, title):
         return self.__form_service.forms().create(body={"info": {"title": title}}).execute()
-
+    
+    def dup_form(self, form_id: str):
+        form = self.__form_service.forms().get(formId=form_id).execute()
+        new_form = self.__form_service.forms().create(
+            body={"info": {"title": form["info"]["title"]}}).execute()
+        req = {
+            "includeFormInResponse": True,
+            "requests": []
+        }
+        for i, item in enumerate(form["items"]):
+            req["requests"].append(
+                {
+                    "createItem":{
+                        "item": item,
+                        "location": {"index": i}
+                    }
+                    # "item": 
+                    #     {
+                    #         "itemId": item["itemId"], 
+                    #         "title": item["title"],
+                    #         "description": item["description"],
+                    #         "questionItem": item["questionItem"],
+                            
+                    #     },
+                    # "location": 
+                    #     {
+                    #         "index": item["location"]["index"]
+                    #     },
+                })
+        # req["requests"].append({"updateSettings": {"settings": form["settings"]}})
+        # req["requests"].append({"updateFormInfo": {"info": form["info"]}})
+        return self.__form_service.forms().batchUpdate(formId=new_form["formId"], body=req).execute()["form"]
+        # return self.__form_service.forms().create(body={"info": form["info"], "settings": form["settings"], "items": form["items"]}).execute()
 
 class FormDecoder(object):
 

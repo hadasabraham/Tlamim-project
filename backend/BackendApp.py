@@ -9,9 +9,10 @@ from pathParameters.parameters import *
 
 from Tables import Database
 import utils
+from datetime import date
 
 serverApp = FastAPI()
-db = Database()
+db = Database(str(date.today().year))
 formServer = FormServer(token_path="form_token.json", credentials_path="credentials.json")
 emailServer = EmailServer(token_path="gmail_token.json", credentials_path="credentials.json")
 utils.refresh_all_forms(db=db, server=formServer)
@@ -25,6 +26,12 @@ serverApp.add_middleware(
     allow_headers=["*"],
 )
 
+
+@serverApp.post("/database/change/{year}", response_class=JSONResponse)
+async def change_database(year: str):
+    global db
+    db = Database(year)
+    utils.refresh_all_forms(db=db, server=formServer)
 
 @serverApp.post("/clear")
 async def clear(request: Request):
@@ -80,6 +87,12 @@ async def add_stage(stage_parameter: StageParameter = Body(embed=True)):
 @serverApp.put("/add/form/")
 async def add_form(form_parameter: FormParameter = Body(embed=True)):
     utils.add_form(db=db, server=formServer, param=form_parameter)
+    
+
+
+@serverApp.put("/dup/forms/{year}", response_class=JSONResponse)
+async def dup_forms(year: str):
+    utils.dup_forms(db=db, server=formServer, year=year)
 
 
 @serverApp.post("/set/grade")
@@ -110,6 +123,12 @@ async def get_candidate(email: str):
 @serverApp.get("/stages", response_class=JSONResponse)
 async def get_stages():
     info = utils.get_stages_info(db=db)
+    return JSONResponse(content=info)
+
+
+@serverApp.get("/statistics", response_class=JSONResponse)
+async def get_statistics():
+    info = utils.get_statistics(db=db)
     return JSONResponse(content=info)
 
 

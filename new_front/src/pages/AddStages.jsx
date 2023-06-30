@@ -14,6 +14,7 @@ import {
     Card,
     Table,
     Stack,
+    Select,
     Paper,
     Avatar,
     Button,
@@ -23,6 +24,8 @@ import {
     MenuItem,
     TableBody,
     TableCell,
+    FormControl,
+    InputLabel,
     Container,
     Typography,
     IconButton,
@@ -62,6 +65,13 @@ const StyledRoot = styled(Toolbar)(({ theme }) => ({
     justifyContent: 'space-between',
     padding: theme.spacing(0, 1, 0, 3),
     justifyContent: 'right',
+}));
+
+const MainStyledRoot = styled(Toolbar)(({ theme }) => ({
+    height: 96,
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: theme.spacing(0, 1, 0, 3),
 }));
 
 class StagePopUp extends Component {
@@ -123,11 +133,16 @@ class StagePopUp extends Component {
 export default function AddStages() {
     const [sstate, setsState] = useState(false);
     const [fstate, setfState] = useState(false);
-    const [stageList, setStageList] = useState([])
+    const [stageList, setStageList] = useState([]);
+    const [year, setYear] = useState("")
+    const [yearList, setYearList] = useState([]);
+
     const fetchTodos = async () => {
         const response = await fetch("http://localhost:8001/stages")
         const data = await response.json()
-        setStageList(data)
+        setStageList(data.info);
+        setYear(data.year);
+        setYearList(data.year_list);
     }
     useEffect(() => {
         fetchTodos()
@@ -139,6 +154,20 @@ export default function AddStages() {
     const addform = () => {
         setfState(!fstate);
     }
+    
+    const updateYear = async (year) => {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+        };
+        await fetch(`http://localhost:8001/database/change/${year}`, requestOptions);
+        addStage();
+    }
+
+    const yearChange = (event) => {
+        setYear(event.target.value);
+        updateYear(event.target.value);
+    };
 
 
     const onFormToggle = async (number, indx, link) => {
@@ -327,6 +356,15 @@ export default function AddStages() {
         addStage();
     }
 
+    const onReqDup = async (event) => {
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+        };
+        await fetch(`http://localhost:8001/dup/forms/${event.target.value}`, requestOptions);
+        addStage();
+    }
+
 
     return (
         <>
@@ -348,43 +386,55 @@ export default function AddStages() {
         </Stack>
 
         <Card>
-            <StyledRoot>
-                        {/* <Button variant="contained" startIcon={<Iconify icon="eva:arrow-fill" />} onClick={addStage}>
-                            איתחול מערכת
-                        </Button>   */}
-                        {sstate && <StyledRoot>
-                            <Button variant="contained" startIcon={<Iconify icon="eva:arrow-left-fill" />} onClick={() => onStageToggle(number, name)}>
-                                הוסף
-                            </Button>
-                            <textarea className="textbox" placeholder={"שם השלב"} onChange={handleName} style={{
-                                fontSize: '16px',
-                                lineHeight: '25px',
-                                borderRadius: '5px',
-                                border: '1px solid #ccc',
-                                resize: 'none',
-                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                width: 'fit-content',
-                                height: '35px',
-                                fontFamily: 'Arial, sans-serif',
-                                marginLeft: '10px'
-                            }} />
-                            <textarea className="textbox" placeholder={"מספר השלב"} onChange={handleNumber} style={{
-                                fontSize: '16px',
-                                lineHeight: '25px',
-                                borderRadius: '5px',
-                                border: '1px solid #ccc',
-                                resize: 'none',
-                                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                width: 'fit-content',
-                                height: '35px',
-                                fontFamily: 'Arial, sans-serif',
-                                marginLeft: '10px'
-                            }} />
-                        </StyledRoot>}    
-                        <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => setsState(!sstate)}>
-                            הוספת שלב
-                        </Button>
-            </StyledRoot>
+            <MainStyledRoot>
+                {/* <Button variant="contained" startIcon={<Iconify icon="eva:arrow-fill" />} onClick={addStage}>
+                    איתחול מערכת
+                </Button>   */}
+                <FormControl>
+                    <InputLabel id="demo-simple-select-label">בחר שנה</InputLabel>
+                    <Select
+                    id="demo-simple-select"
+                    value={year}
+                    label="בחר שנה"
+                    onChange={yearChange}>
+                        {yearList.map((val) =>
+                            <MenuItem value={val}>{val}</MenuItem>
+                        )}
+                    </Select>
+                </FormControl>
+                {sstate && <StyledRoot>
+                    <Button variant="contained" startIcon={<Iconify icon="eva:arrow-left-fill" />} onClick={() => onStageToggle(number, name)}>
+                        הוסף
+                    </Button>
+                    <textarea className="textbox" placeholder={"שם השלב"} onChange={handleName} style={{
+                        fontSize: '16px',
+                        lineHeight: '25px',
+                        borderRadius: '5px',
+                        border: '1px solid #ccc',
+                        resize: 'none',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                        width: 'fit-content',
+                        height: '35px',
+                        fontFamily: 'Arial, sans-serif',
+                        marginLeft: '10px'
+                    }} />
+                    <textarea className="textbox" placeholder={"מספר השלב"} onChange={handleNumber} style={{
+                        fontSize: '16px',
+                        lineHeight: '25px',
+                        borderRadius: '5px',
+                        border: '1px solid #ccc',
+                        resize: 'none',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                        width: 'fit-content',
+                        height: '35px',
+                        fontFamily: 'Arial, sans-serif',
+                        marginLeft: '10px'
+                    }} />
+                </StyledRoot>}    
+                <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />} onClick={() => setsState(!sstate)}>
+                    הוספת שלב
+                </Button>
+            </MainStyledRoot>
 
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
@@ -393,6 +443,22 @@ export default function AddStages() {
                     data={stageList}
 
                 />
+                {stageList.length === 0 && 
+                    <FormControl fullWidth sx={{ alignItems: "center", mb: "6px"}}>
+                        <strong>באפשרותך לשכפל תהליך משנה אחרת</strong>
+                    <FormControl>
+                    <Select
+                            id="demo-simple-select"
+                            value={"בחר שנה"}
+                            onChange={onReqDup}>
+                                <MenuItem value="בחר שנה">בחר שנה</MenuItem>
+                            {yearList.map((val) =>
+                                <MenuItem value={val}>{val}</MenuItem>
+                            )}
+                        </Select>
+                    </FormControl>
+                    </FormControl>
+                }
             </TableContainer>
           </Scrollbar>
 

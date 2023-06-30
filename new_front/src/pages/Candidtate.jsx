@@ -87,7 +87,7 @@ function ProfilePage({ email }) {
         fetchCandidate();
     }, []);
 
-    const removeCandidate = async (data) => {
+    const removeCandidate = async () => {
         const confirmation = window.confirm('האם ברצונך להסיר מועמד זה?');
         if (!confirmation) {
             return;
@@ -97,7 +97,7 @@ function ProfilePage({ email }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 status_parameter: {
-                    email: data.email,
+                    email: candidatesInfo.email,
                     status: 'הוסר',
                 },
             }),

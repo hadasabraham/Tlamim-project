@@ -192,5 +192,20 @@ def get_stages_info(db: Database):
     return db.get_stages_info()
 
 
+def get_statistics(db: Database):
+    return db.get_statistics() 
+
+
 def send_email(server: EmailServer, param=EmailParameter):
     server.send_email(to_email=param.to_email, from_email=param.from_email, subject=param.subject, content=param.content)
+
+
+def dup_forms(db: Database, server: FormServer, year: str):
+    db_from = Database(year)
+    stages_info = get_stages_info(db_from)["info"]
+    for stage in stages_info:
+        add_stage(db, StageParameter(stage["index"], stage["name"], stage["msg"]))
+        form_id = stage["forms"][0]["id"]
+        new_form = server.dup_form(form_id)
+        add_form(db, server, FormParameter(new_form["formId"], new_form["responderUri"], stage["index"]))
+    

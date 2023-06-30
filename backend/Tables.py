@@ -11,6 +11,8 @@ from sqlalchemy import and_
 from sqlalchemy import delete
 import pymongo
 import pandas as pd
+from datetime import date
+import os
 
 from FormsServer import FormDecoder
 
@@ -188,16 +190,17 @@ class FormsDatabase(object):
 
 class Database(object):
 
-    def __init__(self, db_name="database.db", echo=None):
+    def __init__(self, db_name, echo=None):
+        self.db_name = db_name
         self.decisions = None
         self.grades = None
         self.candidates = None
         self.stages = None
         self.forms = None
-        self.forms_db = FormsDatabase()
+        self.forms_db = FormsDatabase(f"answers_{db_name}_db")
         self.meta = MetaData()
         self.engine = create_engine(
-            f"sqlite:///{db_name}", echo=echo, pool_size=20)
+            f"sqlite:///database_{db_name}.db", echo=echo, pool_size=20)
         # event.listen(self.engine, 'connect', Database._fk_pragma_on_connect)  # activate FK checkup
 
         self.session = sessionmaker(bind=self.engine, expire_on_commit=False)
@@ -264,7 +267,7 @@ class Database(object):
             if not exists and candidate and decision.stage <= candidate.stage:
                 session.add(decision)
             session.commit()
-
+            print("here", decision.passed, decision.stage, candidate.stage)
         if not exists and candidate and decision.stage <= candidate.stage and decision.passed:
             self.advance_candidate(email=decision.email)  # advance the candidate to the next stage if such exist
 
@@ -337,6 +340,7 @@ class Database(object):
 
     def advance_candidate(self, email):
         next_index = self.get_next_stage(email=email)
+        print("next_index:",next_index)
         if next_index:
             with self.session() as session:
                 session.query(Candidate).filter(Candidate.email == email).update(
@@ -455,7 +459,7 @@ class Database(object):
     def get_next_stage(self, email: str):
         with self.session() as session:
             candidate = session.query(Candidate).filter(Candidate.email == email).first()
-            next_index = min(session.query(Stage.index).filter(Stage.index > candidate.stage))[0]
+            next_index = max(min(session.query(Stage.index).filter(Stage.index > candidate.stage))[0],  candidate.stage+1)
             session.commit()
         return next_index
 
@@ -637,6 +641,7 @@ class Database(object):
         return self.forms_db.get_form_structure_info(form_id=form_id)
 
     def get_stages_info(self):
+        print(self.db_name)
         forms_partition = defaultdict(lambda: [])
         res = []
         with self.session() as session:
@@ -661,7 +666,11 @@ class Database(object):
                         stage_dict = {'index': stage.index, 'name': stage.name,
                                       'msg': stage.msg, 'forms': [{'link': r["form_link"], 'id': r["form_id"]}]}
                     res.append(stage_dict)
-        return res
+        years = [str(date.today().year), str(date.today().year+1)]
+        for f in os.listdir("."):
+            if f.endswith(".db") and "database_" in f:
+                years.append(f.replace("database_", "").replace(".db", ""))
+        return {"info": res, "year": self.db_name, "year_list": sorted(list(set(years)))}
 
     def update_average(self, email):
         with self.session() as session:
@@ -673,6 +682,49 @@ class Database(object):
                 }
             )
             session.commit()
+
+
+    def get_statistics(self):
+        candidates = self.search_candidates(condition="")
+        stages = {}
+        max_stage = 0
+        active_candidates = {"deleted": 0, "active": 0, "needs_attention": 0}
+        for candidate in candidates:
+            info = self.get_candidate_info(email=candidate.email)
+            if info["current_stage"] not in stages.keys():
+                if max_stage < info["current_stage"]:
+                    max_stage = info["current_stage"]
+                stages[info["current_stage"]] = {"total": 0, "active": 0, "needs_attention": 0}
+            stages[info["current_stage"]]["total"] += 1
+            if info["status"] == "הוסר":
+                active_candidates['deleted'] += 1
+            else:
+                active_candidates['active'] += 1
+                stages[info["current_stage"]]["active"] += 1
+                if self.is_missing(email=candidate.email):
+                    active_candidates['needs_attention'] += 1
+                    stages[info["current_stage"]]["needs_attention"] += 1
+        
+        
+        stages_total = ["0"]*(max_stage+1)
+        stages_active = ["0"]*(max_stage+1)
+        stages_needs_attention = ["0"]*(max_stage+1)
+        for key, val in stages.items():
+            stages_total[key] = str(val["total"])
+            stages_active[key] = str(val["active"])
+            stages_needs_attention[key] = str(val["needs_attention"])
+        
+        return {
+            "candidates_by_stages": {
+                "labels": [str(i) for i in range(max_stage+1)],
+                "total": stages_total,
+                "active": stages_active,
+                "needs_attention": stages_needs_attention, 
+                },
+            "active_candidates": [{"label": 'הוסרו', "value": active_candidates['deleted']}, {"label": 'בתהליך', "value": active_candidates['active']}],
+            "need_attention": [{"label": 'בתהליך', "value": active_candidates['active']-active_candidates['needs_attention']}, {"label": 'חסרה התייחסות', "value": active_candidates['needs_attention']}],
+        }
+                        
 
     @staticmethod
     def _fk_pragma_on_connect(dbapi_con, con_record):
