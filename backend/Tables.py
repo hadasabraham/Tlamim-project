@@ -176,6 +176,10 @@ class FormsDatabase(object):
                     "last_update": last_update
                 }
             )
+            
+    def delete_registration_forms(self):
+        if self.get_registration_form() is None:
+            self.registration_form_collection.delete_many({})
 
     def update_registration_last_update(self, last_update: str):
         r = self.get_registration_form()
@@ -437,6 +441,8 @@ class Database(object):
                     Form.stage == stage).delete()
                 session.query(Stage).filter(
                     Stage.index == stage).delete()
+            if stage == 0:
+                self.forms_db.delete_registration_forms()
             session.commit()
         
 
@@ -459,7 +465,12 @@ class Database(object):
     def get_next_stage(self, email: str):
         with self.session() as session:
             candidate = session.query(Candidate).filter(Candidate.email == email).first()
-            next_index = max(min(session.query(Stage.index).filter(Stage.index > candidate.stage))[0],  candidate.stage+1)
+            next_stages = session.query(Stage.index).filter(
+                Stage.index > candidate.stage).all()
+            next_index = candidate.stage + 1
+            print(len(next_stages))
+            if len(next_stages):
+                next_index = min(next_stages)[0]
             session.commit()
         return next_index
 
@@ -721,8 +732,8 @@ class Database(object):
                 "active": stages_active,
                 "needs_attention": stages_needs_attention, 
                 },
-            "active_candidates": [{"label": 'הוסרו', "value": active_candidates['deleted']}, {"label": 'בתהליך', "value": active_candidates['active']}],
-            "need_attention": [{"label": 'בתהליך', "value": active_candidates['active']-active_candidates['needs_attention']}, {"label": 'חסרה התייחסות', "value": active_candidates['needs_attention']}],
+            "active_candidates": [{"label": 'הוסרו', "value": active_candidates['deleted']}, {"label": 'לא הוסרו', "value": active_candidates['active']}],
+            "need_attention": [{"label": 'לא חסרה התייחסות', "value": active_candidates['active']-active_candidates['needs_attention']}, {"label": 'חסרה התייחסות', "value": active_candidates['needs_attention']}],
         }
                         
 

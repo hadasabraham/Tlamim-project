@@ -42,9 +42,6 @@ export default function DashboardAppPage() {
       </Helmet>
 
       <Container maxWidth="xl">
-        <Typography variant="h4" sx={{ mb: 5 }}>
-          Hi, Welcome back
-        </Typography>
 
         <Grid container spacing={3}>
           
@@ -63,13 +60,13 @@ export default function DashboardAppPage() {
                   data: data.candidates_by_stages.needs_attention,
                 },
                 {
-                  name: 'הכל',
+                  name: 'כל המועמדים',
                   type: 'area',
                   fill: 'gradient',
                   data: data.candidates_by_stages.total,
                 },
                 {
-                  name: 'בתהליך',
+                  name: 'מועמדים בתהליך',
                   type: 'line',
                   fill: 'solid',
                   data: data.candidates_by_stages.active,
@@ -111,7 +108,7 @@ export default function DashboardAppPage() {
           </Grid>
 
 
-          <Grid item xs={12} md={6} lg={4}>
+          {/* <Grid item xs={12} md={6} lg={4}>
             <AppOrderTimeline
               title="Order Timeline"
               list={[...Array(5)].map((_, index) => ({
@@ -140,7 +137,7 @@ export default function DashboardAppPage() {
                 { id: '5', label: 'Sprint Showcase' },
               ]}
             />
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </>

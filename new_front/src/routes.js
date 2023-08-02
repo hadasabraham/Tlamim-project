@@ -5,7 +5,8 @@ import UserPage from './pages/UserPage';
 import DashboardAppPage from './pages/DashboardAppPage';
 import AddStages from './pages/AddStages';
 import ProfilePage from './pages/Candidtate';
-
+// import LoginPage from './pages/LoginPage';
+import LoginPage from './layouts/dashboard/LoginPage';
 // ----------------------------------------------------------------------
 
 function Candidate() {
@@ -23,6 +24,7 @@ export default function Router() {
         <Route path="candidates" element={<UserPage />} />
         <Route path="stages" element={<AddStages />} />
         <Route path="statistics" element={<DashboardAppPage />} />
+        <Route path="" element={<LoginPage/>} />
       </Route>
   </Routes>);
 }
