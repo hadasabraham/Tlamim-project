@@ -9,7 +9,7 @@ Before running the Tlamim app, ensure you have the following requirements instal
 - Python >= 3.9
 - Node.js
 
-In addition you will need to open a google project and allow it to access to both forms and emails. You can see the full instructions for that in https://developers.google.com/workspace/guides/get-started. We you finished, you should add both credentials to the backend folder.
+In addition, you will need to set up a Google project and allow it to access both forms and emails. To do this, follow the instructions in [Google Workspace Developer Guide](https://developers.google.com/workspace/guides/get-started). Once you've completed the setup, add the credentials to the backend folder.
 
 ## Getting Started
 
@@ -36,4 +36,3 @@ npm run start # Start the frontend server
 ```
 
 4. Open your web browser and visit `http://localhost:3000` to access the Tlamim app.
-
