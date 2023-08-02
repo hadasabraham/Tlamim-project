@@ -1,4 +1,4 @@
 #! /bin/sh
 python ./backend/BackendApp.py &
-cd new_front
+cd frontend
 npm run start
