@@ -1,0 +1,24 @@
+{
+  "name": "לילך לוי",
+  "email": "avi@gmail.com",
+  "current_stage": 0,
+  "status": "חדש",
+  "phone": "0522222567",
+  "modify": "10/04/2023, 12:35:41",
+  "answers": [
+    {
+      "stage": 0,
+      "answers": [
+        {"question": "מקום מגורים", "answer": "קריית שמונה"},
+        {"question": "תאריך לידה", "answer": "2000-05-04"},
+        {"question": "למה את/ה מעונין/ת בתוכנית?", "answer": "אני רוצה ללמוד כדי להתקדם בחיים ולא יודע איך להתחיל"}
+      ]
+    }
+  ],
+  "grades": [
+    {"stage": 0, "score": 9, "notes": ""}
+  ],
+  "missing": [],
+  "notes": "",
+  "passed": null
+}
