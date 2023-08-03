@@ -50,5 +50,5 @@ In the backend folder aech file defines a diffrent part of our backend.
 - utils.py - defines an API of the backend features. The backend server use those wrapper function for easier use of the dataset and the other servers.
 - BackendApp.py - defines the backend server. 
 - test.py - defines serveral basic tests on the system.
-- pathParameters/parameters.py - defines the communication structurebetweenthe fronend and the backend.
+- pathParameters/parameters.py - defines the communication structure between the frontend and the backend.
 
