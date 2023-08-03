@@ -1,6 +1,9 @@
 
 backend/token.json
 backend/form_token.json
+backend/gmail_token.json
+backend/credentials.json
+backend/form_credentials.json
 backend/__pycache__/
 backend/pathParameters/__pycache__/
 backend/.DS_Store
