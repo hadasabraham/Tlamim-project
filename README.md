@@ -1,6 +1,6 @@
 # Tlamim - Selection Process Assistant App
 
-Tlamim is a web application that serves as an assistant for the canfifates selection process. It is designed to help streamline the process of selecting candidates. The app consists of a backend written in Python and a frontend built using Node.js.
+Tlamim is a web application that serves as an assistant for the candidates selection process. It is designed to help streamline the process of selecting candidates. The website consists of a backend written in Python and a frontend built using Node.js.
 
 ## Requirements
 
@@ -43,11 +43,11 @@ npm run start # Start the frontend server
 
 ## Backend structure
 
-In the backend folder aech file defines a diffrent part of our backend.
+In the backend folder each file defines a diffrent part of our backend.
 - EmailServer.py - defines an abstraction of Gmail API
 - FormServer.py - defines an abstraction of Google Forms API
 - Tables.py - defines the abstraction of the database and basic operations.  
-- utils.py - defines an API of the backend features. The backend server use those wrapper function for easier use of the dataset and the other servers.
+- utils.py - defines an API of the backend features. The backend server uses those wrapper functions for easier use of the dataset and the other servers.
 - BackendApp.py - defines the backend server. 
 - test.py - defines serveral basic tests on the system.
 - pathParameters/parameters.py - defines the communication structure between the frontend and the backend.
